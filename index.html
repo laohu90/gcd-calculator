@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>最大公约数GCD计算器 - 在线求最大公因数与最小公倍数(含短除法与详细步骤)</title>
+    <meta
+      name="description"
+      content="免费在线最大公约数(GCD)与最小公倍数(LCM)计算器。支持辗转相除法、小学经典短除法、质因数分解与更相减损法完整步骤演示，提供几何矩形切分与初中因式分解公因式提取辅助工具。"
+    />
+    <meta
+      name="keywords"
+      content="最大公约数计算器,gcd在线计算,求两个数最大公因数,最小公倍数,短除法,辗转相除法,质因数分解,小学奥数,初中因式分解前置,gcd calculator,gcf calculator,greatest common divisor,lcm calculator,euclidean algorithm with steps,ladder method gcd"
+    />
+    <link rel="canonical" href="https://ais-pre-gzj2q2wlyy44ipybsdnyvq-945265088356.asia-east1.run.app/" />
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="最大公约数GCD计算器 - 在线求最大公因数与最小公倍数(含短除法与详细步骤)" />
+    <meta
+      property="og:description"
+      content="专业数学工具：提供辗转相除法、短除法梯形图、质因数分解树及几何切分可视化，附带分数约分与公因式提取。"
+    />
+    <meta property="og:site_name" content="GCD 在线数学工坊 | GCD Math Hub" />
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="最大公约数GCD计算器 - 在线求最大公因数与最小公倍数" />
+    <meta
+      name="twitter:description"
+      content="小学奥数、初中因式分解前置必备，全步骤图解与大数支持。"
+    />
+    <!-- Preconnect Fonts & KaTeX CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+    <!-- JSON-LD Structured Data (WebApplication, HowTo, FAQPage) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "最大公约数GCD计算器 (Greatest Common Divisor & LCM Calculator)",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "All",
+          "description": "在线快速计算两个或多个整数的最大公约数(GCD)与最小公倍数(LCM)，提供欧几里得辗转相除法、短除法和质因数分解详细步骤。",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CNY"
+          }
+        },
+        {
+          "@type": "HowTo",
+          "name": "如何用短除法求两个数的最大公约数与最小公倍数",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "找出两数的公共质因数",
+              "text": "从最小的质数2、3、5开始试除，写在左侧除数位置。"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "短除计算商并列在下一行",
+              "text": "将被除数分别除以公共质因数，所得商写在短除号下方。"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "重复直到商互质",
+              "text": "重复提取公共因数，直到两数除了1之外没有其他公因数（即商互质）。"
+            },
+            {
+              "@type": "HowToStep",
+              "name": "计算GCD与LCM",
+              "text": "左侧所有公共除数相乘即为最大公约数(GCD)；左侧除数与底部互质商呈L型全部相乘即为最小公倍数(LCM)。"
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "什么是最大公约数 (Greatest Common Divisor, GCD)？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "最大公约数（又称最大公因数），指两个或多个非零整数共有约数中最大的一个。记作 gcd(a, b) 或简写为 (a, b)。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "求最大公约数有哪些常用方法？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "主要有四种常用方法：1. 辗转相除法（欧几里得算法），最适合大数运算；2. 短除法，中国中小学课本最经典直观的方法；3. 质因数分解法，清晰展现数的素因数构成；4. 更相减损法，出自中国古代《九章算术》。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "最大公约数和最小公倍数之间有什么关系？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "对于任意两个正整数 a 和 b，它们的乘积等于最大公约数与最小公倍数的乘积，即 a × b = gcd(a, b) × lcm(a, b)。因此 lcm(a, b) = (a × b) / gcd(a, b)。"
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
