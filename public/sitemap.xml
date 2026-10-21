@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- Homepage in 5 Languages -->
   <url>
     <loc>https://gcd-calculator.formulascalcbit.com/</loc>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://gcd-calculator.formulascalcbit.com/?lang=en"/>
@@ -12,132 +12,5 @@
     <xhtml:link rel="alternate" hreflang="pt" href="https://gcd-calculator.formulascalcbit.com/?lang=pt"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://gcd-calculator.formulascalcbit.com/?lang=zh"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://gcd-calculator.formulascalcbit.com/"/>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?lang=en</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?lang=es</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?lang=fr</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?lang=pt</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?lang=zh</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Popular High-Frequency Number Pairs for Google Indexing -->
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=48&amp;b=72</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=12&amp;b=18</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=24&amp;b=36</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=36&amp;b=60</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=105&amp;b=252</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=1071&amp;b=462</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=17&amp;b=23</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=15&amp;b=25</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=16&amp;b=24</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=18&amp;b=27</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=20&amp;b=30</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=32&amp;b=48</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=40&amp;b=60</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=54&amp;b=72</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=64&amp;b=96</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=14&amp;b=25</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=21&amp;b=22</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?a=84&amp;b=126</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?nums=84,126,210</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gcd-calculator.formulascalcbit.com/?nums=18,24,36</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>
