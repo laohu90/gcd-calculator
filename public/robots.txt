@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://gcd-calculator.formulascalcbit.com/sitemap.xml
+Sitemap: https://gcd-calculator.formulacalcbit.com/sitemap.xml
