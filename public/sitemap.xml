@@ -13,6 +13,24 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://gcd-calculator.formulacalckit.com/#fractions</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://gcd-calculator.formulacalckit.com/#realworld</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://gcd-calculator.formulacalckit.com/#comparison</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://gcd-calculator.formulacalckit.com/#worksheets</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>weekly</changefreq>

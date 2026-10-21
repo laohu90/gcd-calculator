@@ -23,7 +23,13 @@ import { OlympiadPractice } from './components/OlympiadPractice';
 import { KnowledgeWiki } from './components/KnowledgeWiki';
 import { WorksheetGenerator } from './components/WorksheetGenerator';
 import { PopularPairsDirectory } from './components/PopularPairsDirectory';
+import { FractionStudio } from './components/FractionStudio';
+import { RealWorldScenarios } from './components/RealWorldScenarios';
+import { AlgorithmComparison } from './components/AlgorithmComparison';
+import { EdgeCasesTool } from './components/EdgeCasesTool';
+import { HomeworkFormatter } from './components/HomeworkFormatter';
 import { AdSenseSideRail } from './components/AdSenseSlot';
+import { simplifyFraction } from './utils/mathEngine';
 import {
   Copy,
   Check,
@@ -35,6 +41,11 @@ import {
   BookOpen,
   Calculator,
   FileCheck,
+  Divide,
+  LayoutGrid,
+  Table,
+  HelpCircle,
+  FileText,
 } from 'lucide-react';
 
 export default function App() {
@@ -50,7 +61,18 @@ export default function App() {
 
   // Main navigation tab for compact workbench layout
   const [activeMainTab, setActiveMainTab] = useState<
-    'algorithms' | 'factors' | 'factoring' | 'directory' | 'worksheet' | 'practice' | 'wiki'
+    | 'algorithms'
+    | 'fractions'
+    | 'realworld'
+    | 'comparison'
+    | 'edgecases'
+    | 'homework'
+    | 'factors'
+    | 'factoring'
+    | 'directory'
+    | 'worksheet'
+    | 'practice'
+    | 'wiki'
   >('algorithms');
 
   // Algorithm sub-tabs for 2-number mode
@@ -154,6 +176,12 @@ export default function App() {
   const twoGcd = useMemo(() => bigIntGcd(parsedA, parsedB), [parsedA, parsedB]);
   const twoLcm = useMemo(() => bigIntLcm(parsedA, parsedB), [parsedA, parsedB]);
   const isCoprime = twoGcd === 1n && parsedA > 1n && parsedB > 1n;
+
+  // Fraction simplification for two-number mode
+  const fractionReduction = useMemo(() => {
+    if (parsedB === 0n) return null;
+    return simplifyFraction(parsedA, parsedB);
+  }, [parsedA, parsedB]);
 
   // Multi-number calculations
   const multiGcdVal = useMemo(() => multiGcd(parsedMulti), [parsedMulti]);
@@ -503,6 +531,21 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Instant Fraction Reduction Metric (Traffic Booster) */}
+                {mode === 'two' && fractionReduction && parsedB > 0n && (
+                  <div className="p-2 bg-white/95 rounded-lg border border-indigo-100 flex items-center justify-between text-xs font-mono shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-indigo-950 font-bold truncate">
+                      <Divide className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                      <span>
+                        {parsedA.toString()}/{parsedB.toString()} = {fractionReduction.simplifiedNum.toString()}/{fractionReduction.simplifiedDen.toString()}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-normal shrink-0">
+                      ({fractionReduction.percentageStr})
+                    </span>
+                  </div>
+                )}
+
                 {/* Identity banner with copy button */}
                 <div className="p-2 rounded-lg bg-white/90 border border-indigo-150 flex items-center justify-between text-[11px] font-mono">
                   {mode === 'two' ? (
@@ -528,6 +571,7 @@ export default function App() {
 
           {/* Compact Feature Tabs Navigation Bar */}
           <div className="flex items-center gap-1 p-1 bg-slate-200/80 rounded-xl overflow-x-auto text-xs font-medium no-print">
+            {/* 1. Algorithms */}
             <button
               type="button"
               onClick={() => setActiveMainTab('algorithms')}
@@ -547,9 +591,131 @@ export default function App() {
                   ? 'Algorithmes'
                   : lang === 'pt'
                   ? 'Algoritmos'
-                  : 'Step Visualizers'}
+                  : 'Visualizers'}
               </span>
             </button>
+
+            {/* 2. Fractions Studio */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('fractions')}
+              className={`px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeMainTab === 'fractions'
+                  ? 'bg-white text-indigo-700 shadow-xs font-semibold'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <Divide className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {lang === 'zh'
+                  ? '分数约分'
+                  : lang === 'es'
+                  ? 'Fracciones'
+                  : lang === 'fr'
+                  ? 'Fractions'
+                  : lang === 'pt'
+                  ? 'Frações'
+                  : 'Fractions Studio'}
+              </span>
+            </button>
+
+            {/* 3. Real-World Applications */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('realworld')}
+              className={`px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeMainTab === 'realworld'
+                  ? 'bg-white text-indigo-700 shadow-xs font-semibold'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {lang === 'zh'
+                  ? '生活应用题'
+                  : lang === 'es'
+                  ? 'Aplicaciones'
+                  : lang === 'fr'
+                  ? 'Problèmes'
+                  : lang === 'pt'
+                  ? 'Aplicações'
+                  : 'Real-World'}
+              </span>
+            </button>
+
+            {/* 4. Algorithm Comparison Matrix */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('comparison')}
+              className={`px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeMainTab === 'comparison'
+                  ? 'bg-white text-indigo-700 shadow-xs font-semibold'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <Table className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {lang === 'zh'
+                  ? '算法全景'
+                  : lang === 'es'
+                  ? 'Comparativa'
+                  : lang === 'fr'
+                  ? 'Comparatif'
+                  : lang === 'pt'
+                  ? 'Comparativo'
+                  : 'Algorithm Matrix'}
+              </span>
+            </button>
+
+            {/* 5. Edge Cases & Decimals */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('edgecases')}
+              className={`px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeMainTab === 'edgecases'
+                  ? 'bg-white text-indigo-700 shadow-xs font-semibold'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {lang === 'zh'
+                  ? '小数与边界'
+                  : lang === 'es'
+                  ? 'Casos Especiales'
+                  : lang === 'fr'
+                  ? 'Cas Particuliers'
+                  : lang === 'pt'
+                  ? 'Casos Especiais'
+                  : 'Edge Cases'}
+              </span>
+            </button>
+
+            {/* 6. Homework Formatter & LaTeX */}
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('homework')}
+              className={`px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeMainTab === 'homework'
+                  ? 'bg-white text-indigo-700 shadow-xs font-semibold'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+              <span>
+                {lang === 'zh'
+                  ? '作业规范/LaTeX'
+                  : lang === 'es'
+                  ? 'Formato Tarea/LaTeX'
+                  : lang === 'fr'
+                  ? 'Devoir/LaTeX'
+                  : lang === 'pt'
+                  ? 'Formato/LaTeX'
+                  : 'Exam & LaTeX'}
+              </span>
+            </button>
+
+            {/* 7. Factor Explorer */}
             <button
               type="button"
               onClick={() => setActiveMainTab('factors')}
@@ -562,6 +728,8 @@ export default function App() {
               <FileCheck className="w-3.5 h-3.5 text-indigo-600" />
               <span>{t.tabFactors}</span>
             </button>
+
+            {/* 8. Factoring Precursor */}
             <button
               type="button"
               onClick={() => setActiveMainTab('factoring')}
@@ -574,6 +742,8 @@ export default function App() {
               <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
               <span>{t.tabFactoring}</span>
             </button>
+
+            {/* 9. Popular Pairs Directory */}
             <button
               type="button"
               onClick={() => setActiveMainTab('directory')}
@@ -586,6 +756,8 @@ export default function App() {
               <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
               <span>{t.tabDirectory}</span>
             </button>
+
+            {/* 10. Printable Worksheets */}
             <button
               type="button"
               onClick={() => setActiveMainTab('worksheet')}
@@ -598,6 +770,8 @@ export default function App() {
               <Calculator className="w-3.5 h-3.5 text-indigo-600" />
               <span>{t.tabWorksheet}</span>
             </button>
+
+            {/* 11. Olympiad Practice Quiz */}
             <button
               type="button"
               onClick={() => setActiveMainTab('practice')}
@@ -610,6 +784,8 @@ export default function App() {
               <Award className="w-3.5 h-3.5 text-indigo-600" />
               <span>{t.tabQuiz}</span>
             </button>
+
+            {/* 12. Math Wiki & FAQs */}
             <button
               type="button"
               onClick={() => setActiveMainTab('wiki')}
@@ -726,7 +902,28 @@ export default function App() {
               </div>
             )}
 
-            {/* 2. Factor Pairs, Homework Solution & Divisibility Rules */}
+            {/* 2. Fraction Studio (High Intent & Traffic) */}
+            {activeMainTab === 'fractions' && (
+              <FractionStudio initialA={parsedA} initialB={parsedB} lang={lang} />
+            )}
+
+            {/* 3. Real-World Practical Scenarios & Word Problems */}
+            {activeMainTab === 'realworld' && (
+              <RealWorldScenarios initialA={safeA} initialB={safeB} lang={lang} />
+            )}
+
+            {/* 4. Comprehensive Algorithm Comparison Matrix */}
+            {activeMainTab === 'comparison' && <AlgorithmComparison lang={lang} />}
+
+            {/* 5. Edge Cases, Decimals, Negative & Coprime Solver */}
+            {activeMainTab === 'edgecases' && <EdgeCasesTool lang={lang} />}
+
+            {/* 6. Standard Homework Exam Formatter & LaTeX Export */}
+            {activeMainTab === 'homework' && (
+              <HomeworkFormatter a={parsedA} b={parsedB} lang={lang} />
+            )}
+
+            {/* 7. Factor Pairs, Homework Solution & Divisibility Rules */}
             {activeMainTab === 'factors' && (
               <FactorExplorer
                 a={safeA}

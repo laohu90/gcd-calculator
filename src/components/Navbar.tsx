@@ -48,8 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       brand: 'GCD Math Hub',
       calc: 'Calculator',
       algo: 'Algorithms',
-      factors: 'Factors & Steps',
-      factoring: 'Factoring',
+      fractions: 'Fractions',
+      realworld: 'Real-World',
       worksheet: 'Worksheets',
       copy: 'Copy Result',
       copied: 'Copied',
@@ -58,8 +58,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       brand: 'MCD Calculadora',
       calc: 'Calculadora',
       algo: 'Algoritmos',
-      factors: 'Divisores y Pasos',
-      factoring: 'Factorización',
+      fractions: 'Fracciones',
+      realworld: 'Aplicaciones',
       worksheet: 'Imprimibles',
       copy: 'Copiar',
       copied: 'Copiado',
@@ -68,8 +68,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       brand: 'PGCD Math Hub',
       calc: 'Calculateur',
       algo: 'Algorithmes',
-      factors: 'Diviseurs et Pas',
-      factoring: 'Factorisation',
+      fractions: 'Fractions',
+      realworld: 'Problèmes',
       worksheet: 'Fiches A4',
       copy: 'Copier',
       copied: 'Copié',
@@ -78,8 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       brand: 'MDC Math Hub',
       calc: 'Calculadora',
       algo: 'Algoritmos',
-      factors: 'Divisores e Passos',
-      factoring: 'Fatoração',
+      fractions: 'Frações',
+      realworld: 'Aplicações',
       worksheet: 'Imprimir',
       copy: 'Copiar',
       copied: 'Copiado',
@@ -87,9 +87,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     zh: {
       brand: 'GCD 数学工坊',
       calc: '在线计算',
-      algo: '四法演示',
-      factors: '因数与作业',
-      factoring: '因式分解',
+      algo: '四法推导',
+      fractions: '分数约分',
+      realworld: '生活应用题',
       worksheet: '打印作业',
       copy: '复制结果',
       copied: '已复制',
@@ -119,24 +119,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
           <a
             href="#calculator"
-            onClick={(e) => handleNavClick(e, 'algorithms', 'calculator')}
+            onClick={(e) => handleNavClick(e, 'fractions', 'calculator')}
+            className="hover:text-indigo-600 transition-colors whitespace-nowrap shrink-0"
+          >
+            {navLabels.fractions}
+          </a>
+          <a
+            href="#calculator"
+            onClick={(e) => handleNavClick(e, 'realworld', 'calculator')}
+            className="hover:text-indigo-600 transition-colors whitespace-nowrap shrink-0"
+          >
+            {navLabels.realworld}
+          </a>
+          <a
+            href="#calculator"
+            onClick={(e) => handleNavClick(e, 'comparison', 'calculator')}
             className="hover:text-indigo-600 transition-colors whitespace-nowrap shrink-0"
           >
             {navLabels.algo}
-          </a>
-          <a
-            href="#calculator"
-            onClick={(e) => handleNavClick(e, 'factors', 'calculator')}
-            className="hover:text-indigo-600 transition-colors whitespace-nowrap shrink-0"
-          >
-            {navLabels.factors}
-          </a>
-          <a
-            href="#calculator"
-            onClick={(e) => handleNavClick(e, 'factoring', 'calculator')}
-            className="hover:text-indigo-600 transition-colors whitespace-nowrap shrink-0"
-          >
-            {navLabels.factoring}
           </a>
           <a
             href="#calculator"

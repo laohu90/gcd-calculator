@@ -661,3 +661,205 @@ export function eulerTotient(n: number): number {
   }
   return result;
 }
+
+export interface FractionSimplification {
+  originalNum: bigint;
+  originalDen: bigint;
+  simplifiedNum: bigint;
+  simplifiedDen: bigint;
+  gcd: bigint;
+  isProper: boolean;
+  wholeNumber: bigint;
+  remainderNum: bigint;
+  decimalValue: number;
+  decimalStr: string;
+  percentageStr: string;
+}
+
+export function simplifyFraction(num: bigint, den: bigint): FractionSimplification {
+  if (den === 0n) {
+    return {
+      originalNum: num,
+      originalDen: den,
+      simplifiedNum: 0n,
+      simplifiedDen: 0n,
+      gcd: 0n,
+      isProper: true,
+      wholeNumber: 0n,
+      remainderNum: 0n,
+      decimalValue: 0,
+      decimalStr: 'undefined (div by 0)',
+      percentageStr: 'N/A',
+    };
+  }
+
+  const sign = (num < 0n && den > 0n) || (num > 0n && den < 0n) ? -1n : 1n;
+  const absNum = num < 0n ? -num : num;
+  const absDen = den < 0n ? -den : den;
+  const g = bigIntGcd(absNum, absDen);
+
+  const sNum = (absNum / g) * sign;
+  const sDen = absDen / g;
+
+  const isProper = absNum < absDen;
+  const wholeNumber = absNum / absDen;
+  const remainderNum = absNum % absDen;
+
+  const decVal = Number(absNum) / Number(absDen);
+  const signPrefix = sign < 0n ? '-' : '';
+
+  return {
+    originalNum: num,
+    originalDen: den,
+    simplifiedNum: sNum,
+    simplifiedDen: sDen,
+    gcd: g,
+    isProper,
+    wholeNumber,
+    remainderNum,
+    decimalValue: decVal * (sign < 0n ? -1 : 1),
+    decimalStr: `${signPrefix}${decVal.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`,
+    percentageStr: `${signPrefix}${(decVal * 100).toFixed(2)}%`,
+  };
+}
+
+export function fractionAddSubtract(
+  n1: bigint,
+  d1: bigint,
+  n2: bigint,
+  d2: bigint,
+  op: '+' | '-'
+) {
+  if (d1 === 0n || d2 === 0n) {
+    throw new Error('Denominator cannot be zero');
+  }
+  const commonDenom = bigIntLcm(d1, d2);
+  const factor1 = commonDenom / d1;
+  const factor2 = commonDenom / d2;
+  const scaledNum1 = n1 * factor1;
+  const scaledNum2 = n2 * factor2;
+  const resultNum = op === '+' ? scaledNum1 + scaledNum2 : scaledNum1 - scaledNum2;
+  const simplified = simplifyFraction(resultNum, commonDenom);
+
+  return {
+    commonDenom,
+    factor1,
+    factor2,
+    scaledNum1,
+    scaledNum2,
+    resultNum,
+    simplified,
+  };
+}
+
+export interface RealWorldScenarioResult {
+  a: number;
+  b: number;
+  gcd: number;
+  lcm: number;
+  tiling: {
+    tileSize: number;
+    tilesWide: number;
+    tilesHigh: number;
+    totalTiles: number;
+  };
+  giftBags: {
+    totalBags: number;
+    itemsAperBag: number;
+    itemsBperBag: number;
+  };
+  cutting: {
+    maxPieceLength: number;
+    piecesA: number;
+    piecesB: number;
+    totalPieces: number;
+  };
+  runners: {
+    syncTimeSeconds: number;
+    lapsA: number;
+    lapsB: number;
+  };
+}
+
+export function calculateRealWorldScenarios(a: number, b: number): RealWorldScenarioResult {
+  const safeA = Math.max(1, Math.min(a, 10000000));
+  const safeB = Math.max(1, Math.min(b, 10000000));
+  const g = Number(bigIntGcd(BigInt(safeA), BigInt(safeB)));
+  const l = Number(bigIntLcm(BigInt(safeA), BigInt(safeB)));
+
+  return {
+    a: safeA,
+    b: safeB,
+    gcd: g,
+    lcm: l,
+    tiling: {
+      tileSize: g,
+      tilesWide: safeA / g,
+      tilesHigh: safeB / g,
+      totalTiles: (safeA / g) * (safeB / g),
+    },
+    giftBags: {
+      totalBags: g,
+      itemsAperBag: safeA / g,
+      itemsBperBag: safeB / g,
+    },
+    cutting: {
+      maxPieceLength: g,
+      piecesA: safeA / g,
+      piecesB: safeB / g,
+      totalPieces: safeA / g + safeB / g,
+    },
+    runners: {
+      syncTimeSeconds: l,
+      lapsA: safeA > 0 ? l / safeA : 0,
+      lapsB: safeB > 0 ? l / safeB : 0,
+    },
+  };
+}
+
+export function decimalGcd(aStr: string, bStr: string) {
+  const getDecPlaces = (s: string) => {
+    const parts = s.split('.');
+    return parts.length > 1 ? parts[1].length : 0;
+  };
+  const d1 = getDecPlaces(aStr);
+  const d2 = getDecPlaces(bStr);
+  const maxDec = Math.max(d1, d2);
+  const factor = 10 ** maxDec;
+
+  const intA = Math.round(parseFloat(aStr) * factor);
+  const intB = Math.round(parseFloat(bStr) * factor);
+  const intGcd = Number(bigIntGcd(BigInt(Math.abs(intA)), BigInt(Math.abs(intB))));
+  const finalDecimalGcd = intGcd / factor;
+
+  return {
+    scaledFactor: factor,
+    intA,
+    intB,
+    intGcd,
+    finalDecimalGcd,
+  };
+}
+
+export function formatLatexSolution(a: bigint, b: bigint): string {
+  const g = bigIntGcd(a, b);
+  const l = bigIntLcm(a, b);
+  return `% LaTeX Code for GCD and LCM
+\\documentclass{article}
+\\usepackage{amsmath}
+\\begin{document}
+\\section*{Greatest Common Divisor \\& LCM}
+\\begin{align*}
+  a &= ${a}, \\quad b = ${b} \\\\[6pt]
+  \\gcd(${a}, ${b}) &= ${g} \\\\[6pt]
+  \\operatorname{lcm}(${a}, ${b}) &= ${l} \\\\[6pt]
+  a \\times b &= \\gcd(a, b) \\times \\operatorname{lcm}(a, b) \\\\[6pt]
+  ${a} \\times ${b} &= ${g} \\times ${l} = ${a * b}
+\\end{align*}
+
+\\subsection*{Fraction Reduction}
+\\[
+  \\frac{${a}}{${b}} = \\frac{${a} \\div ${g}}{${b} \\div ${g}} = \\frac{${b !== 0n ? a / g : 0n}}{${b !== 0n ? b / g : 0n}}
+\\]
+\\end{document}`;
+}
