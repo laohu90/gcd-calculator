@@ -38,8 +38,9 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [lang, setLang] = useState<Language>('zh');
-  const t = translations[lang];
+  // Default language is English ('en') as requested
+  const [lang, setLang] = useState<Language>('en');
+  const t = translations[lang] || translations.en;
 
   // Input state
   const [mode, setMode] = useState<'two' | 'multi'>('two');
@@ -70,7 +71,13 @@ export default function App() {
       const urlNums = params.get('nums');
       const urlLang = params.get('lang');
 
-      if (urlLang === 'en' || urlLang === 'zh') {
+      if (
+        urlLang === 'en' ||
+        urlLang === 'es' ||
+        urlLang === 'fr' ||
+        urlLang === 'pt' ||
+        urlLang === 'zh'
+      ) {
         setLang(urlLang);
       }
       if (urlA && urlB) {
@@ -99,8 +106,8 @@ export default function App() {
         url.searchParams.delete('a');
         url.searchParams.delete('b');
       }
-      if (lang === 'en') {
-        url.searchParams.set('lang', 'en');
+      if (lang !== 'en') {
+        url.searchParams.set('lang', lang);
       } else {
         url.searchParams.delete('lang');
       }
@@ -152,19 +159,29 @@ export default function App() {
   const multiGcdVal = useMemo(() => multiGcd(parsedMulti), [parsedMulti]);
   const multiLcmVal = useMemo(() => multiLcm(parsedMulti), [parsedMulti]);
 
-  // Dynamic Document Title for SEO indexing
+  // Dynamic Document Title and HTML lang attribute for SEO indexing across 5 languages
   useEffect(() => {
-    if (mode === 'two' && parsedA > 0n && parsedB > 0n) {
-      document.title =
-        lang === 'zh'
-          ? `gcd(${parsedA}, ${parsedB}) = ${twoGcd} 最大公约数计算与步骤 - GCD 数学工坊`
-          : `GCD of ${parsedA} and ${parsedB} is ${twoGcd} | GCD Math Hub`;
-    } else {
-      document.title =
-        lang === 'zh'
-          ? '最大公约数GCD计算器 - 在线求最大公因数与最小公倍数(含短除法与详细步骤)'
-          : 'Greatest Common Divisor (GCD/GCF) Calculator with Steps | GCD Math Hub';
-    }
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+
+    const hasNumbers = mode === 'two' && parsedA > 0n && parsedB > 0n;
+    const titles: Record<Language, string> = {
+      en: hasNumbers
+        ? `GCD of ${parsedA} and ${parsedB} is ${twoGcd} | Step-by-Step Calculator`
+        : 'Greatest Common Divisor (GCD/GCF) & LCM Calculator with Steps | GCD Math Hub',
+      es: hasNumbers
+        ? `MCD de ${parsedA} y ${parsedB} es ${twoGcd} | Calculadora Paso a Paso`
+        : 'Calculadora de Máximo Común Divisor (MCD) y MCM Paso a Paso',
+      fr: hasNumbers
+        ? `PGCD de ${parsedA} et ${parsedB} est ${twoGcd} | Calculateur avec Étapes`
+        : 'Calculateur de Plus Grand Commun Diviseur (PGCD) et PPCM avec Étapes',
+      pt: hasNumbers
+        ? `MDC de ${parsedA} e ${parsedB} é ${twoGcd} | Calculadora com Passos`
+        : 'Calculadora de Máximo Divisor Comum (MDC) e MMC com Passos',
+      zh: hasNumbers
+        ? `gcd(${parsedA}, ${parsedB}) = ${twoGcd} 最大公约数计算与步骤 - GCD 数学工坊`
+        : '最大公约数GCD计算器 - 在线求最大公因数与最小公倍数(含短除法与详细步骤)',
+    };
+    document.title = titles[lang] || titles.en;
   }, [mode, parsedA, parsedB, twoGcd, lang]);
 
   // Safe numbers for visualizers
@@ -206,19 +223,36 @@ export default function App() {
     return getDivisors(safeGcd);
   }, [safeGcd]);
 
-  // Copy result action
+  // Copy result action formatted in 5 languages
   const handleCopyResult = useCallback(() => {
     let text = '';
-    if (mode === 'two') {
+    const currentUrl = window.location.href;
+
+    if (lang === 'zh') {
       text =
-        lang === 'zh'
-          ? `【最大公约数与最小公倍数计算结果】\n数字: a = ${parsedA.toString()}, b = ${parsedB.toString()}\n最大公约数 GCD: gcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\n最小公倍数 LCM: lcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\n恒等式: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\n在线步骤: ${window.location.href}`
-          : `[GCD & LCM Calculation Result]\nNumbers: a = ${parsedA.toString()}, b = ${parsedB.toString()}\nGCD: gcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\nLCM: lcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\nIdentity: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\nURL: ${window.location.href}`;
+        mode === 'two'
+          ? `【最大公约数与最小公倍数计算结果】\n数字: a = ${parsedA.toString()}, b = ${parsedB.toString()}\n最大公约数 GCD: gcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\n最小公倍数 LCM: lcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\n恒等式: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\n在线步骤: ${currentUrl}`
+          : `【多数字最大公因数与最小公倍数】\n数字: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nGCD: ${multiGcdVal.toString()}\nLCM: ${multiLcmVal.toString()}\n在线步骤: ${currentUrl}`;
+    } else if (lang === 'es') {
+      text =
+        mode === 'two'
+          ? `[Resultado de cálculo MCD y MCM]\nNúmeros: a = ${parsedA.toString()}, b = ${parsedB.toString()}\nMCD: mcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\nMCM: mcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\nIdentidad: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\nPasos completos: ${currentUrl}`
+          : `[MCD y MCM de múltiples números]\nNúmeros: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nMCD: ${multiGcdVal.toString()}\nMCM: ${multiLcmVal.toString()}\nPasos completos: ${currentUrl}`;
+    } else if (lang === 'fr') {
+      text =
+        mode === 'two'
+          ? `[Résultat du calcul PGCD et PPCM]\nNombres: a = ${parsedA.toString()}, b = ${parsedB.toString()}\nPGCD: pgcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\nPPCM: ppcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\nIdentité: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\nÉtapes détaillées: ${currentUrl}`
+          : `[PGCD et PPCM de plusieurs nombres]\nNombres: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nPGCD: ${multiGcdVal.toString()}\nPPCM: ${multiLcmVal.toString()}\nÉtapes détaillées: ${currentUrl}`;
+    } else if (lang === 'pt') {
+      text =
+        mode === 'two'
+          ? `[Resultado do cálculo MDC e MMC]\nNúmeros: a = ${parsedA.toString()}, b = ${parsedB.toString()}\nMDC: mdc(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\nMMC: mmc(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\nIdentidade: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\nResolução online: ${currentUrl}`
+          : `[MDC e MMC de múltiplos números]\nNúmeros: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nMDC: ${multiGcdVal.toString()}\nMMC: ${multiLcmVal.toString()}\nResolução online: ${currentUrl}`;
     } else {
       text =
-        lang === 'zh'
-          ? `【多数字最大公因数与最小公倍数】\n数字: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nGCD: ${multiGcdVal.toString()}\nLCM: ${multiLcmVal.toString()}\n在线步骤: ${window.location.href}`
-          : `[Multiple Numbers GCD & LCM]\nNumbers: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nGCD: ${multiGcdVal.toString()}\nLCM: ${multiLcmVal.toString()}\nURL: ${window.location.href}`;
+        mode === 'two'
+          ? `[GCD & LCM Calculation Result]\nNumbers: a = ${parsedA.toString()}, b = ${parsedB.toString()}\nGCD: gcd(${parsedA.toString()}, ${parsedB.toString()}) = ${twoGcd.toString()}\nLCM: lcm(${parsedA.toString()}, ${parsedB.toString()}) = ${twoLcm.toString()}\nIdentity: ${parsedA.toString()} × ${parsedB.toString()} = ${twoGcd.toString()} × ${twoLcm.toString()}\nStep-by-step URL: ${currentUrl}`
+          : `[Multiple Numbers GCD & LCM]\nNumbers: [${parsedMulti.map((n) => n.toString()).join(', ')}]\nGCD: ${multiGcdVal.toString()}\nLCM: ${multiLcmVal.toString()}\nStep-by-step URL: ${currentUrl}`;
     }
 
     navigator.clipboard.writeText(text);
@@ -253,7 +287,7 @@ export default function App() {
         hasResult={twoGcd > 0n}
         copied={copied}
         lang={lang}
-        onToggleLang={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+        onSelectLang={setLang}
         onSelectTab={setActiveMainTab}
       />
 
@@ -279,9 +313,7 @@ export default function App() {
                 {t.heroHeading}
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                {lang === 'zh'
-                  ? '小学奥数短除法 · 欧几里得辗转相除 · 质因数分解 · 初中因式分解前置'
-                  : 'Fast online GCD & LCM calculator with complete step-by-step solutions'}
+                {t.heroSubheading}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 text-xs">
@@ -292,7 +324,7 @@ export default function App() {
                 title={t.shareBtn}
               >
                 <Share2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>{lang === 'zh' ? '分享此题' : 'Share'}</span>
+                <span>{t.shareBtn}</span>
               </button>
             </div>
           </div>
@@ -314,7 +346,7 @@ export default function App() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {lang === 'zh' ? '两个数步骤模式' : 'Two Numbers'}
+                  {t.twoNumMode}
                 </button>
                 <button
                   type="button"
@@ -325,13 +357,13 @@ export default function App() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {lang === 'zh' ? '多数字模式 (3+)' : 'Multiple (3+)'}
+                  {t.multiNumMode}
                 </button>
               </div>
 
               {/* Quick Presets row */}
               <div className="flex items-center flex-wrap gap-1 text-[11px]">
-                <span className="text-slate-400 mr-0.5">{lang === 'zh' ? '例题:' : 'Presets:'}</span>
+                <span className="text-slate-400 mr-0.5">{t.presetTitle}</span>
                 <button
                   type="button"
                   onClick={() => loadPair(48, 72)}
@@ -358,7 +390,7 @@ export default function App() {
                   onClick={() => loadPair(17, 23)}
                   className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-mono transition-colors"
                 >
-                  (17, 23 互质)
+                  (17, 23)
                 </button>
                 <button
                   type="button"
@@ -378,7 +410,7 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        {lang === 'zh' ? '整数 A (第一个数)' : 'Integer A'}
+                        {t.inputALabel}
                       </label>
                       <input
                         type="text"
@@ -391,7 +423,7 @@ export default function App() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        {lang === 'zh' ? '整数 B (第二个数)' : 'Integer B'}
+                        {t.inputBLabel}
                       </label>
                       <input
                         type="text"
@@ -406,7 +438,7 @@ export default function App() {
                 ) : (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {lang === 'zh' ? '输入多个整数 (逗号或空格隔开)' : 'Enter Integers (3 or more)'}
+                      {t.multiInputLabel}
                     </label>
                     <input
                       type="text"
@@ -422,7 +454,7 @@ export default function App() {
                 {mode === 'two' && commonDivisors.length > 0 && (
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between gap-2">
                     <span className="text-slate-500 shrink-0">
-                      {lang === 'zh' ? '公共因数:' : 'Common Divisors:'}
+                      {t.commonFactorsTitle}:
                     </span>
                     <div className="flex flex-wrap gap-1 font-mono">
                       {commonDivisors.map((d) => (
@@ -442,51 +474,44 @@ export default function App() {
                 )}
               </div>
 
-              {/* Right Column: GCD, LCM & Identity (5 cols) */}
-              <div className="lg:col-span-5 grid grid-cols-2 gap-2.5">
-                {/* GCD Box */}
-                <div className="p-3.5 rounded-xl bg-indigo-600 text-white shadow-2xs flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[11px] text-indigo-100 font-medium">
-                    <span>{lang === 'zh' ? '最大公约数 GCD' : 'Greatest Common Divisor'}</span>
-                    <span className="font-mono">gcd(a,b)</span>
+              {/* Right Column: Hero Metrics & Identity in 1 concise card (5 cols) */}
+              <div className="lg:col-span-5 p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/40 flex flex-col justify-between space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {/* GCD Result */}
+                  <div className="p-2.5 rounded-lg bg-white border border-indigo-100 shadow-2xs">
+                    <div className="text-[11px] font-semibold text-indigo-700">
+                      {lang === 'zh' ? '最大公因数 GCD' : lang === 'es' ? 'MCD' : lang === 'fr' ? 'PGCD' : lang === 'pt' ? 'MDC' : 'GCD / GCF'}
+                    </div>
+                    <div className="text-xl sm:text-2xl font-black font-mono text-indigo-900 tracking-tight mt-0.5">
+                      {mode === 'two' ? twoGcd.toString() : multiGcdVal.toString()}
+                    </div>
+                    {mode === 'two' && isCoprime && (
+                      <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 mt-1">
+                        {t.coprimeBadge}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight tabular-nums my-1 break-all">
-                    {mode === 'two' ? twoGcd.toString() : multiGcdVal.toString()}
-                  </div>
-                  <div className="text-[10px] text-indigo-200 truncate">
-                    {isCoprime
-                      ? lang === 'zh'
-                        ? '两数互质 (gcd=1)'
-                        : 'Coprime pair'
-                      : lang === 'zh'
-                      ? '最大公有约数'
-                      : 'Highest divisor'}
+
+                  {/* LCM Result */}
+                  <div className="p-2.5 rounded-lg bg-white border border-indigo-100 shadow-2xs">
+                    <div className="text-[11px] font-semibold text-slate-600">
+                      {lang === 'zh' ? '最小公倍数 LCM' : lang === 'es' ? 'MCM' : lang === 'fr' ? 'PPCM' : lang === 'pt' ? 'MMC' : 'LCM'}
+                    </div>
+                    <div className="text-xl sm:text-2xl font-black font-mono text-slate-900 tracking-tight mt-0.5">
+                      {mode === 'two' ? twoLcm.toString() : multiLcmVal.toString()}
+                    </div>
                   </div>
                 </div>
 
-                {/* LCM Box */}
-                <div className="p-3.5 rounded-xl bg-slate-900 text-white shadow-2xs flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                    <span>{lang === 'zh' ? '最小公倍数 LCM' : 'Least Common Multiple'}</span>
-                    <span className="font-mono">lcm(a,b)</span>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight tabular-nums my-1 text-amber-400 break-all">
-                    {mode === 'two' ? twoLcm.toString() : multiLcmVal.toString()}
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    {lang === 'zh' ? '最小公有倍数' : 'Smallest multiple'}
-                  </div>
-                </div>
-
-                {/* Identity banner spans 2 cols */}
-                <div className="col-span-2 p-2 rounded-lg bg-slate-100 border border-slate-200 text-xs flex items-center justify-between font-mono">
+                {/* Identity banner with copy button */}
+                <div className="p-2 rounded-lg bg-white/90 border border-indigo-150 flex items-center justify-between text-[11px] font-mono">
                   {mode === 'two' ? (
                     <span className="text-slate-700 truncate">
                       {parsedA.toString()} × {parsedB.toString()} = {twoGcd.toString()} × {twoLcm.toString()}
                     </span>
                   ) : (
                     <span className="text-slate-600 text-xs">
-                      {lang === 'zh' ? '多数字计算已完成' : 'Multi-number calculated'}
+                      {lang === 'zh' ? '多数字计算已完成' : 'Multi-number calculation complete'}
                     </span>
                   )}
                   <button
@@ -494,7 +519,7 @@ export default function App() {
                     onClick={handleCopyResult}
                     className="ml-2 text-indigo-600 hover:text-indigo-800 text-xs font-semibold shrink-0"
                   >
-                    {copied ? (lang === 'zh' ? '已复制' : 'Copied') : (lang === 'zh' ? '复制公式' : 'Copy')}
+                    {copied ? t.copiedBtn : t.copyBtn}
                   </button>
                 </div>
               </div>
@@ -513,7 +538,17 @@ export default function App() {
               }`}
             >
               <Layers className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '四法图解' : 'Step Visualizers'}</span>
+              <span>
+                {lang === 'zh'
+                  ? '四法图解'
+                  : lang === 'es'
+                  ? 'Algoritmos'
+                  : lang === 'fr'
+                  ? 'Algorithmes'
+                  : lang === 'pt'
+                  ? 'Algoritmos'
+                  : 'Step Visualizers'}
+              </span>
             </button>
             <button
               type="button"
@@ -525,7 +560,7 @@ export default function App() {
               }`}
             >
               <FileCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '因数与规范作业' : 'Factors & Solution'}</span>
+              <span>{t.tabFactors}</span>
             </button>
             <button
               type="button"
@@ -537,7 +572,7 @@ export default function App() {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '因式分解与约分' : 'Factoring & Fractions'}</span>
+              <span>{t.tabFactoring}</span>
             </button>
             <button
               type="button"
@@ -549,7 +584,7 @@ export default function App() {
               }`}
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '高频数对速查' : 'Search Directory'}</span>
+              <span>{t.tabDirectory}</span>
             </button>
             <button
               type="button"
@@ -561,7 +596,7 @@ export default function App() {
               }`}
             >
               <Calculator className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '生成打印作业' : 'Worksheets'}</span>
+              <span>{t.tabWorksheet}</span>
             </button>
             <button
               type="button"
@@ -573,7 +608,7 @@ export default function App() {
               }`}
             >
               <Award className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '奥数真题自测' : 'Olympiad Quiz'}</span>
+              <span>{t.tabQuiz}</span>
             </button>
             <button
               type="button"
@@ -585,7 +620,7 @@ export default function App() {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{lang === 'zh' ? '数论百科与FAQ' : 'Theory & FAQs'}</span>
+              <span>{t.tabWiki}</span>
             </button>
           </div>
 
@@ -597,7 +632,15 @@ export default function App() {
                 {/* Algorithm Subtabs */}
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
                   <div className="text-xs font-bold text-slate-800">
-                    {lang === 'zh' ? '详细推导方法切换：' : 'Select Method:'}
+                    {lang === 'zh'
+                      ? '详细推导方法切换：'
+                      : lang === 'es'
+                      ? 'Cambiar método de resolución:'
+                      : lang === 'fr'
+                      ? 'Changer de méthode :'
+                      : lang === 'pt'
+                      ? 'Mudar método de resolução:'
+                      : 'Select Method:'}
                   </div>
                   <div className="flex items-center flex-wrap gap-1 p-0.5 bg-slate-100 rounded-lg text-xs">
                     <button
@@ -659,21 +702,26 @@ export default function App() {
                 </div>
 
                 {/* Subtab Content */}
-                {activeAlgoTab === 'short' && <ShortDivisionView data={shortDivData} />}
+                {activeAlgoTab === 'short' && (
+                  <ShortDivisionView data={shortDivData} lang={lang} />
+                )}
                 {activeAlgoTab === 'euclid' && (
                   <EuclideanView
                     steps={euclideanSteps}
                     extended={extendedEuclid}
                     a={parsedA}
                     b={parsedB}
+                    lang={lang}
                   />
                 )}
-                {activeAlgoTab === 'prime' && <PrimeFactorView a={safeA} b={safeB} />}
+                {activeAlgoTab === 'prime' && (
+                  <PrimeFactorView a={safeA} b={safeB} lang={lang} />
+                )}
                 {activeAlgoTab === 'subtraction' && (
-                  <SubtractionView data={subtractionData} />
+                  <SubtractionView data={subtractionData} lang={lang} />
                 )}
                 {activeAlgoTab === 'tiling' && (
-                  <GeometricTilingView a={safeA} b={safeB} gcd={safeGcd} />
+                  <GeometricTilingView a={safeA} b={safeB} gcd={safeGcd} lang={lang} />
                 )}
               </div>
             )}
@@ -690,9 +738,9 @@ export default function App() {
             )}
 
             {/* 3. Factoring Precursor */}
-            {activeMainTab === 'factoring' && <FactoringTool />}
+            {activeMainTab === 'factoring' && <FactoringTool lang={lang} />}
 
-            {/* 3. Programmatic SEO Directory */}
+            {/* 4. Programmatic SEO Directory */}
             {activeMainTab === 'directory' && (
               <PopularPairsDirectory
                 onSelectPair={loadPair}
@@ -701,14 +749,14 @@ export default function App() {
               />
             )}
 
-            {/* 4. Worksheet Generator */}
+            {/* 5. Worksheet Generator */}
             {activeMainTab === 'worksheet' && <WorksheetGenerator lang={lang} />}
 
-            {/* 5. Olympiad Practice Quiz */}
-            {activeMainTab === 'practice' && <OlympiadPractice />}
+            {/* 6. Olympiad Practice Quiz */}
+            {activeMainTab === 'practice' && <OlympiadPractice lang={lang} />}
 
-            {/* 6. Math Encyclopedia & SEO Wiki */}
-            {activeMainTab === 'wiki' && <KnowledgeWiki />}
+            {/* 7. Math Encyclopedia & SEO Wiki */}
+            {activeMainTab === 'wiki' && <KnowledgeWiki lang={lang} />}
           </div>
         </main>
 
@@ -721,18 +769,22 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-800">
-              {lang === 'zh' ? 'GCD 数学工坊' : 'GCD Math Hub'}
+              {t.siteTitle}
             </span>
             <span aria-hidden="true">·</span>
             <span>
-              {lang === 'zh'
-                ? '免费在线最大公约数与最小公倍数计算器'
-                : 'Free Online GCD & LCM Step-by-Step Calculator'}
+              {t.tagline}
             </span>
           </div>
           <div className="text-slate-400">
             {lang === 'zh'
               ? '支持短除法 · 辗转相除 · 质因数分解 · 几何铺砖 · 可打印作业'
+              : lang === 'es'
+              ? 'Método de descomposición · Euclides · Factores primos · Imprimibles'
+              : lang === 'fr'
+              ? 'Disposition en échelle · Algorithme d’Euclide · Fiches d’exercices'
+              : lang === 'pt'
+              ? 'Dispositivo prático · Algoritmo de Euclides · Fatores primos · Folhas A4'
               : 'Ladder Method · Euclidean Algorithm · Prime Venn · Worksheets'}
           </div>
         </div>

@@ -1,14 +1,18 @@
 import React, { useMemo } from 'react';
-import { getPrimeFactorization, formatPrimeFactors, PrimeFactor } from '../utils/mathEngine';
+import { getPrimeFactorization, formatPrimeFactors } from '../utils/mathEngine';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { MathView } from './MathView';
 import { Layers } from 'lucide-react';
 
 interface PrimeFactorViewProps {
   a: number;
   b: number;
+  lang?: Language;
 }
 
-export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
+export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b, lang = 'en' }) => {
+  const t = COMPONENT_TRANSLATIONS[lang].primeFactor;
   const factorsA = useMemo(() => getPrimeFactorization(a), [a]);
   const factorsB = useMemo(() => getPrimeFactorization(b), [b]);
 
@@ -46,7 +50,10 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
     });
 
     const g = shared.reduce((acc, v) => acc * v, 1);
-    const l = g * aRemaining.reduce((acc, v) => acc * v, 1) * bCopy.reduce((acc, v) => acc * v, 1);
+    const l =
+      g *
+      aRemaining.reduce((acc, v) => acc * v, 1) *
+      bCopy.reduce((acc, v) => acc * v, 1);
 
     return {
       sharedPrimes: shared,
@@ -80,7 +87,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
       {/* Prime factor canonical forms */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
-          <div className="text-xs text-slate-500 font-semibold">数字 A 的标准分解式</div>
+          <div className="text-xs text-slate-500 font-semibold">{t.canonicalA}</div>
           <div className="text-lg font-mono text-indigo-900 font-bold">
             <MathView math={`${a} = ${formatPrimeFactors(factorsA)}`} />
           </div>
@@ -97,7 +104,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
         </div>
 
         <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
-          <div className="text-xs text-slate-500 font-semibold">数字 B 的标准分解式</div>
+          <div className="text-xs text-slate-500 font-semibold">{t.canonicalB}</div>
           <div className="text-lg font-mono text-emerald-900 font-bold">
             <MathView math={`${b} = ${formatPrimeFactors(factorsB)}`} />
           </div>
@@ -119,9 +126,9 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-indigo-400" />
-            <h4 className="font-semibold text-sm">质因数韦恩图 (Venn Diagram) 集合分解</h4>
+            <h4 className="font-semibold text-sm">{t.vennTitle}</h4>
           </div>
-          <span className="text-xs text-slate-400">交集为 GCD · 并集为 LCM</span>
+          <span className="text-xs text-slate-400">{t.vennSubtitle}</span>
         </div>
 
         <div className="relative max-w-xl mx-auto py-6">
@@ -148,14 +155,14 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
             />
 
             {/* Labels */}
-            <text x="160" y="55" fill="#c7d2fe" fontSize="16" fontWeight="bold">
-              {a} 专属因数
+            <text x="160" y="55" fill="#c7d2fe" fontSize="14" fontWeight="bold">
+              {t.labelOnlyA(a)}
             </text>
-            <text x="380" y="55" fill="#a7f3d0" fontSize="16" fontWeight="bold">
-              {b} 专属因数
+            <text x="380" y="55" fill="#a7f3d0" fontSize="14" fontWeight="bold">
+              {t.labelOnlyB(b)}
             </text>
-            <text x="300" y="45" fill="#fef08a" fontSize="14" fontWeight="bold" textAnchor="middle">
-              交集 ∩ (公有因数)
+            <text x="300" y="45" fill="#fef08a" fontSize="13" fontWeight="bold" textAnchor="middle">
+              {t.labelIntersection}
             </text>
 
             {/* Elements inside A only */}
@@ -171,7 +178,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-400 italic">无</span>
+                  <span className="text-xs text-slate-400 italic">{t.none}</span>
                 )}
               </div>
             </foreignObject>
@@ -189,7 +196,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-400 italic">互质(1)</span>
+                  <span className="text-xs text-slate-400 italic">1</span>
                 )}
               </div>
             </foreignObject>
@@ -207,7 +214,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-400 italic">无</span>
+                  <span className="text-xs text-slate-400 italic">{t.none}</span>
                 )}
               </div>
             </foreignObject>
@@ -218,15 +225,15 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm mt-2">
           <div className="p-3 bg-slate-800/90 rounded-lg border border-slate-700">
             <span className="text-indigo-300 font-semibold block mb-1">
-              最大公约数 (韦恩图中间交集之积)：
+              {t.gcdRuleTitle}:
             </span>
             <div className="font-mono text-amber-300 font-bold">
-              {sharedPrimes.length > 0 ? `${sharedPrimes.join(' × ')} = ${gcdVal}` : '1 (两数互质)'}
+              {sharedPrimes.length > 0 ? `${sharedPrimes.join(' × ')} = ${gcdVal}` : '1'}
             </div>
           </div>
           <div className="p-3 bg-slate-800/90 rounded-lg border border-slate-700">
             <span className="text-emerald-300 font-semibold block mb-1">
-              最小公倍数 (韦恩图全集所有数字之积)：
+              {t.lcmRuleTitle}:
             </span>
             <div className="font-mono text-emerald-300 font-bold">
               {[...onlyA, ...sharedPrimes, ...onlyB].join(' × ')} = {lcmVal}
@@ -238,20 +245,20 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
       {/* Exponents Comparison Table (min / max rules) */}
       <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
         <h4 className="font-semibold text-slate-800 text-sm">
-          质因数幂次极值法则：各素因数指数取最小值 (GCD) 与 最大值 (LCM)
+          {t.tableTitle}
         </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
               <tr>
-                <th className="py-2.5 px-3">素数因数 (p)</th>
-                <th className="py-2.5 px-3 font-mono">{a} 的指数</th>
-                <th className="py-2.5 px-3 font-mono">{b} 的指数</th>
+                <th className="py-2.5 px-3">{t.colPrime}</th>
+                <th className="py-2.5 px-3 font-mono">{t.colExpA(a)}</th>
+                <th className="py-2.5 px-3 font-mono">{t.colExpB(b)}</th>
                 <th className="py-2.5 px-3 bg-indigo-50/50 text-indigo-900 font-semibold">
-                  GCD 取 min(a, b)
+                  {t.colMinExp}
                 </th>
                 <th className="py-2.5 px-3 bg-emerald-50/50 text-emerald-900 font-semibold">
-                  LCM 取 max(a, b)
+                  {t.colMaxExp}
                 </th>
               </tr>
             </thead>
@@ -262,7 +269,7 @@ export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b }) => {
                   <td className="py-2 px-3 text-slate-600">{row.expA}</td>
                   <td className="py-2 px-3 text-slate-600">{row.expB}</td>
                   <td className="py-2 px-3 bg-indigo-50/30 text-indigo-700 font-bold">
-                    {row.minExp} {row.minExp > 0 ? `(${row.p}^${row.minExp})` : '(无此因子)'}
+                    {row.minExp} {row.minExp > 0 ? `(${row.p}^${row.minExp})` : '-'}
                   </td>
                   <td className="py-2 px-3 bg-emerald-50/30 text-emerald-700 font-bold">
                     {row.maxExp} ({row.p}^{row.maxExp})

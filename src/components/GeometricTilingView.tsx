@@ -1,15 +1,24 @@
 import React, { useMemo, useState } from 'react';
 import { MathView } from './MathView';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { Grid, Eye, Scissors } from 'lucide-react';
 
 interface GeometricTilingViewProps {
   a: number;
   b: number;
   gcd: number;
+  lang?: Language;
 }
 
-export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, gcd }) => {
+export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({
+  a,
+  b,
+  gcd,
+  lang = 'en',
+}) => {
   const [viewMode, setViewMode] = useState<'tiling' | 'euclideanCut'>('tiling');
+  const t = COMPONENT_TRANSLATIONS[lang].tiling;
 
   // Guard inputs to guarantee valid positive integers
   const safeA = Math.max(1, Math.floor(Math.abs(a)));
@@ -76,10 +85,10 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
           <h4 className="font-semibold text-slate-800 text-sm">
-            几何直观：为什么最大公约数是“最大正方形铺砖边长”？
+            {t.maxSquareTitle(gcd)}
           </h4>
           <p className="text-xs text-slate-500 mt-0.5">
-            长方形尺寸为 {a} × {b}，用边长为 {gcd} 的正方形地砖可严丝合缝完全铺满。
+            {t.dimLabel(a, b)} · {t.totalCount(totalTiles, tilesX, tilesY)}
           </p>
         </div>
 
@@ -94,7 +103,7 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
             }`}
           >
             <Grid className="w-3.5 h-3.5" />
-            <span>网格铺砖视图</span>
+            <span>{t.tabTiling}</span>
           </button>
           <button
             type="button"
@@ -106,7 +115,7 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
             }`}
           >
             <Scissors className="w-3.5 h-3.5" />
-            <span>欧几里得正方形切分法</span>
+            <span>{t.tabCuts}</span>
           </button>
         </div>
       </div>
@@ -116,10 +125,10 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
         {isScaleTooLarge && viewMode === 'tiling' ? (
           <div className="text-center p-6 space-y-3">
             <p className="text-amber-300 font-medium text-sm">
-              当前数值较大 ({a} × {b})，全部微小网格渲染会降低性能。
+              {t.scaleNotice}
             </p>
             <p className="text-slate-400 text-xs max-w-md mx-auto">
-              建议切换至右上角「欧几里得正方形切分法」查看宏观几何切分，或在上方输入较小数字（如 24 与 18、36 与 24）体验精细铺砖。
+              {t.cutDesc}
             </p>
           </div>
         ) : (
@@ -160,7 +169,7 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
                   fontWeight="bold"
                   opacity={0.8}
                 >
-                  {tilesX} × {tilesY} = {totalTiles} 块砖
+                  {tilesX} × {tilesY} = {totalTiles}
                 </text>
               </svg>
             ) : (
@@ -201,20 +210,20 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
         {/* Legend / Metrics */}
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-xl text-center text-xs">
           <div className="p-2 bg-slate-800/80 rounded-lg border border-slate-700">
-            <span className="text-slate-400 block">长方形宽 (A)</span>
+            <span className="text-slate-400 block">{lang === 'zh' ? '宽 (A)' : 'Width (A)'}</span>
             <span className="font-mono font-bold text-slate-100 text-sm">{a}</span>
           </div>
           <div className="p-2 bg-slate-800/80 rounded-lg border border-slate-700">
-            <span className="text-slate-400 block">长方形高 (B)</span>
+            <span className="text-slate-400 block">{lang === 'zh' ? '高 (B)' : 'Height (B)'}</span>
             <span className="font-mono font-bold text-slate-100 text-sm">{b}</span>
           </div>
           <div className="p-2 bg-slate-800/80 rounded-lg border border-slate-700">
-            <span className="text-indigo-300 block">地砖边长 (GCD)</span>
+            <span className="text-indigo-300 block">{lang === 'zh' ? '地砖边长 (GCD)' : 'Tile Edge (GCD)'}</span>
             <span className="font-mono font-bold text-indigo-400 text-sm">{gcd}</span>
           </div>
           <div className="p-2 bg-slate-800/80 rounded-lg border border-slate-700">
-            <span className="text-amber-300 block">所需正方形总数</span>
-            <span className="font-mono font-bold text-amber-400 text-sm">{totalTiles} 块</span>
+            <span className="text-amber-300 block">{lang === 'zh' ? '所需方砖总数' : 'Total Tiles'}</span>
+            <span className="font-mono font-bold text-amber-400 text-sm">{totalTiles}</span>
           </div>
         </div>
       </div>
@@ -223,14 +232,12 @@ export const GeometricTilingView: React.FC<GeometricTilingViewProps> = ({ a, b, 
       <div className="p-4 rounded-xl bg-indigo-50/60 border border-indigo-100 space-y-2 text-xs sm:text-sm text-slate-700">
         <div className="font-semibold text-indigo-950 flex items-center gap-2">
           <Eye className="w-4 h-4 text-indigo-600" />
-          <span>小学奥数经典场景：裁纸与地砖问题</span>
+          <span>{t.tabCuts} · {t.cutDesc}</span>
         </div>
-        <p className="leading-relaxed">
-          题目形式：“有一张长 {a} 厘米、宽 {b} 厘米的长方形纸板，要把它裁成若干同样大小的正方形纸片，且纸片边长为整厘米数，没有剩余。纸片的边长最大是多少？一共能裁多少张？”
-        </p>
         <div className="bg-white p-2.5 rounded-lg border border-indigo-150 font-mono text-indigo-900 text-xs">
-          解法：正方形最大边长 = <MathView math={`\\gcd(${a}, ${b}) = ${gcd}`} /> 厘米；
-          纸片总张数 = <MathView math={`(${a} \\div ${gcd}) \\times (${b} \\div ${gcd}) = ${tilesX} \\times ${tilesY} = ${totalTiles}`} /> 张。
+          <MathView
+            math={`\\gcd(${a}, ${b}) = ${gcd} \\implies (${a} \\div ${gcd}) \\times (${b} \\div ${gcd}) = ${tilesX} \\times ${tilesY} = ${totalTiles}`}
+          />
         </div>
       </div>
     </div>

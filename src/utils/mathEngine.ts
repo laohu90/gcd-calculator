@@ -437,17 +437,18 @@ export function isPrime(n: number): boolean {
   return true;
 }
 
-// Divisibility Rules Analysis (2, 3, 4, 5, 6, 8, 9, 10, 11)
+// Divisibility Rules Analysis (2, 3, 4, 5, 6, 8, 9, 10, 11) for 5 languages
 export interface DivisibilityRuleResult {
   divisor: number;
   divisible: boolean;
-  ruleNameZh: string;
-  ruleNameEn: string;
-  reasonZh: string;
-  reasonEn: string;
+  ruleName: string;
+  reason: string;
 }
 
-export function getDivisibilityRules(n: number): DivisibilityRuleResult[] {
+export function getDivisibilityRules(
+  n: number,
+  lang: 'en' | 'es' | 'fr' | 'pt' | 'zh' = 'en'
+): DivisibilityRuleResult[] {
   const absN = Math.abs(n);
   const digits = absN.toString().split('').map(Number);
   const sumDigits = digits.reduce((acc, d) => acc + d, 0);
@@ -461,89 +462,93 @@ export function getDivisibilityRules(n: number): DivisibilityRuleResult[] {
     altSum += i % 2 === 0 ? digits[digits.length - 1 - i] : -digits[digits.length - 1 - i];
   }
 
+  const d2 = absN % 2 === 0;
+  const d3 = sumDigits % 3 === 0;
+  const d4 = lastTwo % 4 === 0;
+  const d5 = lastDigit === 0 || lastDigit === 5;
+  const d6 = d2 && d3;
+  const d8 = lastThree % 8 === 0;
+  const d9 = sumDigits % 9 === 0;
+  const d10 = lastDigit === 0;
+  const d11 = altSum % 11 === 0;
+
+  if (lang === 'zh') {
+    return [
+      { divisor: 2, divisible: d2, ruleName: '被 2 整除', reason: `末位数字为 ${lastDigit}（${d2 ? '是偶数' : '是奇数'}）` },
+      { divisor: 3, divisible: d3, ruleName: '被 3 整除', reason: `各位数字之和为 ${sumDigits}（${d3 ? '能被3整除' : '不能被3整除'}）` },
+      { divisor: 4, divisible: d4, ruleName: '被 4 整除', reason: `末两位数字为 ${lastTwo}（${d4 ? '能被4整除' : '不能被4整除'}）` },
+      { divisor: 5, divisible: d5, ruleName: '被 5 整除', reason: `末位数字为 ${lastDigit}（${d5 ? '末位是0或5' : '末位非0也非5'}）` },
+      { divisor: 6, divisible: d6, ruleName: '被 6 整除', reason: `需同时被2和3整除（${d6 ? '满足条件' : '不满足'}）` },
+      { divisor: 8, divisible: d8, ruleName: '被 8 整除', reason: `末三位数字为 ${lastThree}（${d8 ? '能被8整除' : '不能被8整除'}）` },
+      { divisor: 9, divisible: d9, ruleName: '被 9 整除', reason: `各位数字之和为 ${sumDigits}（${d9 ? '能被9整除' : '不能被9整除'}）` },
+      { divisor: 10, divisible: d10, ruleName: '被 10 整除', reason: `末位数字为 ${lastDigit}（${d10 ? '末位是0' : '末位不是0'}）` },
+      { divisor: 11, divisible: d11, ruleName: '被 11 整除', reason: `奇偶位交错和为 ${altSum}（${d11 ? '能被11整除' : '不能被11整除'}）` },
+    ];
+  }
+
+  if (lang === 'es') {
+    return [
+      { divisor: 2, divisible: d2, ruleName: 'Divisible por 2', reason: `La última cifra es ${lastDigit} (${d2 ? 'es par' : 'es impar'})` },
+      { divisor: 3, divisible: d3, ruleName: 'Divisible por 3', reason: `La suma de cifras es ${sumDigits} (${d3 ? 'múltiplo de 3' : 'no divisible'})` },
+      { divisor: 4, divisible: d4, ruleName: 'Divisible por 4', reason: `Las 2 últimas cifras son ${lastTwo} (${d4 ? 'divisible por 4' : 'no divisible'})` },
+      { divisor: 5, divisible: d5, ruleName: 'Divisible por 5', reason: `La última cifra es ${lastDigit} (${d5 ? 'termina en 0 o 5' : 'no termina en 0 o 5'})` },
+      { divisor: 6, divisible: d6, ruleName: 'Divisible por 6', reason: `Debe ser divisible por 2 y por 3 (${d6 ? 'cumple ambas' : 'falla'})` },
+      { divisor: 8, divisible: d8, ruleName: 'Divisible por 8', reason: `Las 3 últimas cifras son ${lastThree} (${d8 ? 'divisible por 8' : 'no divisible'})` },
+      { divisor: 9, divisible: d9, ruleName: 'Divisible por 9', reason: `La suma de cifras es ${sumDigits} (${d9 ? 'múltiplo de 9' : 'no divisible'})` },
+      { divisor: 10, divisible: d10, ruleName: 'Divisible por 10', reason: `La última cifra es ${lastDigit} (${d10 ? 'termina en 0' : 'no termina en 0'})` },
+      { divisor: 11, divisible: d11, ruleName: 'Divisible por 11', reason: `Suma alternada es ${altSum} (${d11 ? 'múltiplo de 11' : 'no divisible'})` },
+    ];
+  }
+
+  if (lang === 'fr') {
+    return [
+      { divisor: 2, divisible: d2, ruleName: 'Divisible par 2', reason: `Le dernier chiffre est ${lastDigit} (${d2 ? 'est pair' : 'est impair'})` },
+      { divisor: 3, divisible: d3, ruleName: 'Divisible par 3', reason: `La somme des chiffres est ${sumDigits} (${d3 ? 'multiple de 3' : 'non divisible'})` },
+      { divisor: 4, divisible: d4, ruleName: 'Divisible par 4', reason: `Les deux derniers chiffres sont ${lastTwo} (${d4 ? 'divisible par 4' : 'non divisible'})` },
+      { divisor: 5, divisible: d5, ruleName: 'Divisible par 5', reason: `Le dernier chiffre est ${lastDigit} (${d5 ? 'se termine par 0 ou 5' : 'ne se termine pas par 0/5'})` },
+      { divisor: 6, divisible: d6, ruleName: 'Divisible par 6', reason: `Doit être divisible par 2 et 3 (${d6 ? 'vérifié' : 'non vérifié'})` },
+      { divisor: 8, divisible: d8, ruleName: 'Divisible par 8', reason: `Les 3 derniers chiffres sont ${lastThree} (${d8 ? 'divisible par 8' : 'non divisible'})` },
+      { divisor: 9, divisible: d9, ruleName: 'Divisible par 9', reason: `La somme des chiffres est ${sumDigits} (${d9 ? 'multiple de 9' : 'non divisible'})` },
+      { divisor: 10, divisible: d10, ruleName: 'Divisible par 10', reason: `Le dernier chiffre est ${lastDigit} (${d10 ? 'finit par 0' : 'ne finit pas par 0'})` },
+      { divisor: 11, divisible: d11, ruleName: 'Divisible par 11', reason: `Différence alternée est ${altSum} (${d11 ? 'multiple de 11' : 'non divisible'})` },
+    ];
+  }
+
+  if (lang === 'pt') {
+    return [
+      { divisor: 2, divisible: d2, ruleName: 'Divisível por 2', reason: `O último algarismo é ${lastDigit} (${d2 ? 'é par' : 'é ímpar'})` },
+      { divisor: 3, divisible: d3, ruleName: 'Divisível por 3', reason: `A soma dos algarismos é ${sumDigits} (${d3 ? 'múltiplo de 3' : 'não divisível'})` },
+      { divisor: 4, divisible: d4, ruleName: 'Divisível por 4', reason: `Os 2 últimos algarismos são ${lastTwo} (${d4 ? 'divisível por 4' : 'não divisível'})` },
+      { divisor: 5, divisible: d5, ruleName: 'Divisível por 5', reason: `O último algarismo é ${lastDigit} (${d5 ? 'termina em 0 ou 5' : 'não termina em 0/5'})` },
+      { divisor: 6, divisible: d6, ruleName: 'Divisível por 6', reason: `Deve ser divisível por 2 e por 3 (${d6 ? 'cumpre ambas' : 'não cumpre'})` },
+      { divisor: 8, divisible: d8, ruleName: 'Divisível por 8', reason: `Os 3 últimos algarismos são ${lastThree} (${d8 ? 'divisível por 8' : 'não divisível'})` },
+      { divisor: 9, divisible: d9, ruleName: 'Divisível por 9', reason: `A soma dos algarismos é ${sumDigits} (${d9 ? 'múltiplo de 9' : 'não divisível'})` },
+      { divisor: 10, divisible: d10, ruleName: 'Divisível por 10', reason: `O último algarismo é ${lastDigit} (${d10 ? 'termina em 0' : 'não termina em 0'})` },
+      { divisor: 11, divisible: d11, ruleName: 'Divisível por 11', reason: `Soma alternada é ${altSum} (${d11 ? 'múltiplo de 11' : 'não divisível'})` },
+    ];
+  }
+
+  // Default English ('en')
   return [
-    {
-      divisor: 2,
-      divisible: absN % 2 === 0,
-      ruleNameZh: '被 2 整除',
-      ruleNameEn: 'Divisible by 2',
-      reasonZh: `末位数字为 ${lastDigit}（${absN % 2 === 0 ? '是偶数' : '是奇数'}）`,
-      reasonEn: `Last digit is ${lastDigit} (${absN % 2 === 0 ? 'even' : 'odd'})`,
-    },
-    {
-      divisor: 3,
-      divisible: sumDigits % 3 === 0,
-      ruleNameZh: '被 3 整除',
-      ruleNameEn: 'Divisible by 3',
-      reasonZh: `各位数字之和为 ${sumDigits}（${sumDigits % 3 === 0 ? '能被3整除' : '不能被3整除'}）`,
-      reasonEn: `Sum of digits is ${sumDigits} (${sumDigits % 3 === 0 ? 'divisible by 3' : 'not divisible'})`,
-    },
-    {
-      divisor: 4,
-      divisible: lastTwo % 4 === 0,
-      ruleNameZh: '被 4 整除',
-      ruleNameEn: 'Divisible by 4',
-      reasonZh: `末两位数字为 ${lastTwo}（${lastTwo % 4 === 0 ? '能被4整除' : '不能被4整除'}）`,
-      reasonEn: `Last two digits are ${lastTwo} (${lastTwo % 4 === 0 ? 'divisible by 4' : 'not divisible'})`,
-    },
-    {
-      divisor: 5,
-      divisible: lastDigit === 0 || lastDigit === 5,
-      ruleNameZh: '被 5 整除',
-      ruleNameEn: 'Divisible by 5',
-      reasonZh: `末位数字为 ${lastDigit}（${lastDigit === 0 || lastDigit === 5 ? '末位是0或5' : '末位非0也非5'}）`,
-      reasonEn: `Last digit is ${lastDigit} (${lastDigit === 0 || lastDigit === 5 ? 'ends with 0 or 5' : 'does not end with 0 or 5'})`,
-    },
-    {
-      divisor: 6,
-      divisible: absN % 2 === 0 && sumDigits % 3 === 0,
-      ruleNameZh: '被 6 整除',
-      ruleNameEn: 'Divisible by 6',
-      reasonZh: `必须同时能被 2 和 3 整除（${absN % 2 === 0 && sumDigits % 3 === 0 ? '符合条件' : '不符合条件'}）`,
-      reasonEn: `Must be divisible by both 2 and 3 (${absN % 2 === 0 && sumDigits % 3 === 0 ? 'passed' : 'failed'})`,
-    },
-    {
-      divisor: 8,
-      divisible: lastThree % 8 === 0,
-      ruleNameZh: '被 8 整除',
-      ruleNameEn: 'Divisible by 8',
-      reasonZh: `末三位数字为 ${lastThree}（${lastThree % 8 === 0 ? '能被8整除' : '不能被8整除'}）`,
-      reasonEn: `Last three digits are ${lastThree} (${lastThree % 8 === 0 ? 'divisible by 8' : 'not divisible'})`,
-    },
-    {
-      divisor: 9,
-      divisible: sumDigits % 9 === 0,
-      ruleNameZh: '被 9 整除',
-      ruleNameEn: 'Divisible by 9',
-      reasonZh: `各位数字之和为 ${sumDigits}（${sumDigits % 9 === 0 ? '能被9整除' : '不能被9整除'}）`,
-      reasonEn: `Sum of digits is ${sumDigits} (${sumDigits % 9 === 0 ? 'divisible by 9' : 'not divisible'})`,
-    },
-    {
-      divisor: 10,
-      divisible: lastDigit === 0,
-      ruleNameZh: '被 10 整除',
-      ruleNameEn: 'Divisible by 10',
-      reasonZh: `末位数字为 ${lastDigit}（${lastDigit === 0 ? '末位是0' : '末位不是0'}）`,
-      reasonEn: `Last digit is ${lastDigit} (${lastDigit === 0 ? 'ends in 0' : 'does not end in 0'})`,
-    },
-    {
-      divisor: 11,
-      divisible: altSum % 11 === 0,
-      ruleNameZh: '被 11 整除',
-      ruleNameEn: 'Divisible by 11',
-      reasonZh: `奇数位与偶数位数字差为 ${altSum}（${altSum % 11 === 0 ? '能被11整除' : '不能被11整除'}）`,
-      reasonEn: `Alternating digit sum is ${altSum} (${altSum % 11 === 0 ? 'divisible by 11' : 'not divisible'})`,
-    },
+    { divisor: 2, divisible: d2, ruleName: 'Divisible by 2', reason: `Last digit is ${lastDigit} (${d2 ? 'even number' : 'odd number'})` },
+    { divisor: 3, divisible: d3, ruleName: 'Divisible by 3', reason: `Sum of digits is ${sumDigits} (${d3 ? 'divisible by 3' : 'not divisible'})` },
+    { divisor: 4, divisible: d4, ruleName: 'Divisible by 4', reason: `Last two digits are ${lastTwo} (${d4 ? 'divisible by 4' : 'not divisible'})` },
+    { divisor: 5, divisible: d5, ruleName: 'Divisible by 5', reason: `Last digit is ${lastDigit} (${d5 ? 'ends in 0 or 5' : 'does not end in 0/5'})` },
+    { divisor: 6, divisible: d6, ruleName: 'Divisible by 6', reason: `Must be divisible by both 2 and 3 (${d6 ? 'passed' : 'failed'})` },
+    { divisor: 8, divisible: d8, ruleName: 'Divisible by 8', reason: `Last three digits are ${lastThree} (${d8 ? 'divisible by 8' : 'not divisible'})` },
+    { divisor: 9, divisible: d9, ruleName: 'Divisible by 9', reason: `Sum of digits is ${sumDigits} (${d9 ? 'divisible by 9' : 'not divisible'})` },
+    { divisor: 10, divisible: d10, ruleName: 'Divisible by 10', reason: `Last digit is ${lastDigit} (${d10 ? 'ends in 0' : 'does not end in 0'})` },
+    { divisor: 11, divisible: d11, ruleName: 'Divisible by 11', reason: `Alternating digit sum is ${altSum} (${d11 ? 'divisible by 11' : 'not divisible'})` },
   ];
 }
 
-// Standard Homework Writeup Text Generator
+// Standard Homework Writeup Text Generator for 5 languages
 export function generateHomeworkText(
   a: number,
   b: number,
   gcdVal: number,
   lcmVal: number,
-  lang: 'zh' | 'en'
+  lang: 'en' | 'es' | 'fr' | 'pt' | 'zh'
 ): string {
   if (lang === 'zh') {
     return `【规范解题过程】
@@ -563,6 +568,60 @@ export function generateHomeworkText(
   lcm(${a}, ${b}) = (${a} × ${b}) ÷ ${gcdVal} = ${lcmVal}
 
 答：${a} 和 ${b} 的最大公约数是 ${gcdVal}，最小公倍数是 ${lcmVal}。`;
+  } else if (lang === 'es') {
+    return `[Solución Formal de la Tarea]
+Problema: Hallar el Máximo Común Divisor (MCD) y el Mínimo Común Múltiplo (MCM) de ${a} y ${b}.
+
+Solución:
+1. Descomposición en factores primos:
+   ${a} = ${formatPrimeFactors(getPrimeFactorization(a))}
+   ${b} = ${formatPrimeFactors(getPrimeFactorization(b))}
+
+2. Cálculo del Máximo Común Divisor (MCD):
+   Multiplicar los factores primos comunes con su menor exponente:
+   MCD(${a}, ${b}) = ${gcdVal}
+
+3. Cálculo del Mínimo Común Múltiplo (MCM):
+   Aplicando la propiedad a × b = MCD(a, b) × MCM(a, b):
+   MCM(${a}, ${b}) = (${a} × ${b}) ÷ ${gcdVal} = ${lcmVal}
+
+Respuesta: El MCD de ${a} y ${b} es ${gcdVal}, y el MCM es ${lcmVal}.`;
+  } else if (lang === 'fr') {
+    return `[Solution Rédigée Conforme]
+Problème : Déterminer le Plus Grand Commun Diviseur (PGCD) et le PPCM de ${a} et ${b}.
+
+Résolution :
+1. Décomposition en facteurs premiers :
+   ${a} = ${formatPrimeFactors(getPrimeFactorization(a))}
+   ${b} = ${formatPrimeFactors(getPrimeFactorization(b))}
+
+2. Calcul du PGCD :
+   Produit des facteurs premiers communs affectés du plus petit exposant :
+   PGCD(${a}, ${b}) = ${gcdVal}
+
+3. Calcul du PPCM :
+   En utilisant la formule a × b = PGCD(a, b) × PPCM(a, b) :
+   PPCM(${a}, ${b}) = (${a} × ${b}) ÷ ${gcdVal} = ${lcmVal}
+
+Conclusion : Le PGCD de ${a} et ${b} est ${gcdVal}, et le PPCM est ${lcmVal}.`;
+  } else if (lang === 'pt') {
+    return `[Resolução Formal de Exercício]
+Problema: Encontrar o Máximo Divisor Comum (MDC) e o Mínimo Múltiplo Comum (MMC) de ${a} e ${b}.
+
+Resolução:
+1. Decomposição em fatores primos:
+   ${a} = ${formatPrimeFactors(getPrimeFactorization(a))}
+   ${b} = ${formatPrimeFactors(getPrimeFactorization(b))}
+
+2. Determinação do MDC:
+   Multiplicar todos os fatores primos comuns elevados ao menor expoente:
+   MDC(${a}, ${b}) = ${gcdVal}
+
+3. Determinação do MMC:
+   Pela relação fundamental a × b = MDC(a, b) × MMC(a, b):
+   MMC(${a}, ${b}) = (${a} × ${b}) ÷ ${gcdVal} = ${lcmVal}
+
+Resposta: O MDC de ${a} e ${b} é ${gcdVal}, e o MMC é ${lcmVal}.`;
   } else {
     return `[Standard Homework Solution]
 Problem: Find the Greatest Common Divisor (GCD) and Least Common Multiple (LCM) of ${a} and ${b}.
@@ -573,12 +632,12 @@ Solution:
    ${b} = ${formatPrimeFactors(getPrimeFactorization(b))}
 
 2. Find Greatest Common Divisor (GCD / GCF):
-   Multiply all shared prime factors:
+   Multiply all common prime factors with lowest exponents:
    gcd(${a}, ${b}) = ${gcdVal}
 
 3. Find Least Common Multiple (LCM):
    Using product identity a × b = gcd(a, b) × lcm(a, b):
-   lcm(${a}, ${b}) = (${a} × ${b}) / ${gcdVal} = ${lcmVal}
+   lcm(${a}, ${b}) = (${a} × ${b}) ÷ ${gcdVal} = ${lcmVal}
 
 Answer: The GCD of ${a} and ${b} is ${gcdVal}, and the LCM is ${lcmVal}.`;
   }

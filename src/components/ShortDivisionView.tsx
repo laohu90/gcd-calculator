@@ -1,27 +1,27 @@
 import React from 'react';
 import { ShortDivisionResult } from '../utils/mathEngine';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { MathView } from './MathView';
-import { CheckCircle2, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface ShortDivisionViewProps {
   data: ShortDivisionResult;
+  lang?: Language;
 }
 
-export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) => {
+export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data, lang = 'en' }) => {
   const { initialNumbers, steps, finalQuotients, gcdDivisors, gcd, lcm } = data;
+  const t = COMPONENT_TRANSLATIONS[lang].shortDivision;
 
   if (steps.length === 0) {
     return (
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
         <p className="text-slate-700 font-medium text-base">
-          数字 [{initialNumbers.join(', ')}] 没有大于 1 的共同素因数（互质或已无法继续短除）。
+          {t.emptyNote(initialNumbers.join(', '))}
         </p>
         <p className="text-slate-500 text-sm mt-2">
-          因此最大公约数 <span className="font-semibold text-slate-800">gcd = 1</span>，最小公倍数{' '}
-          <span className="font-semibold text-slate-800">
-            lcm = {initialNumbers.join(' × ')} = {lcm}
-          </span>
-          。
+          {t.emptySub(initialNumbers.join(' × '), lcm)}
         </p>
       </div>
     );
@@ -32,8 +32,8 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) =>
       {/* Short division ladder visualization */}
       <div className="overflow-x-auto p-4 sm:p-6 bg-slate-900 text-slate-100 rounded-xl shadow-inner font-mono text-base sm:text-lg">
         <div className="text-xs uppercase tracking-wider text-slate-400 mb-4 font-sans font-medium flex items-center justify-between">
-          <span>小学标准短除法梯形图解 (Ladder Diagram)</span>
-          <span className="text-indigo-300">左侧为公因数 · 底部为互质商</span>
+          <span>{t.badgeTitle}</span>
+          <span className="text-indigo-300">{t.badgeHint}</span>
         </div>
 
         <div className="inline-block min-w-full sm:min-w-[420px] py-2">
@@ -59,8 +59,8 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) =>
 
           {/* Bottom final quotients row */}
           <div className="flex items-center mt-2">
-            <div className="w-16 sm:w-20 text-right pr-3 shrink-0 text-slate-500 text-xs">
-              商(互质)
+            <div className="w-16 sm:w-20 text-right pr-3 shrink-0 text-slate-400 text-xs font-sans">
+              {t.quotientLabel}
             </div>
             <div className="pl-4 pr-6 py-1 flex gap-6 sm:gap-10 text-amber-300">
               {finalQuotients.map((q, qIdx) => (
@@ -83,11 +83,11 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) =>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
             <h4 className="font-semibold text-slate-900 text-sm">
-              最大公约数 (GCD) = 左侧所有除数相乘
+              {t.gcdCardTitle}
             </h4>
           </div>
           <p className="text-xs text-slate-600">
-            仅将每一步短除提取出的公有质因数（左侧竖列）相乘：
+            {t.gcdCardDesc}
           </p>
           <div className="bg-white p-3 rounded-lg border border-indigo-150 text-indigo-900 font-mono text-sm sm:text-base font-semibold">
             <MathView
@@ -101,11 +101,11 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) =>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             <h4 className="font-semibold text-slate-900 text-sm">
-              最小公倍数 (LCM) = “L”型全部数字相乘
+              {t.lcmCardTitle}
             </h4>
           </div>
           <p className="text-xs text-slate-600">
-            短除法口诀：“左侧公因数 × 底部互质商”，呈英文“L”型相乘：
+            {t.lcmCardDesc}
           </p>
           <div className="bg-white p-3 rounded-lg border border-amber-150 text-amber-900 font-mono text-sm sm:text-base font-semibold break-all">
             <MathView
@@ -119,8 +119,8 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data }) =>
       <div className="text-xs text-slate-600 bg-slate-100/80 rounded-lg p-3 flex items-start gap-2.5">
         <Info className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-slate-800">短除法终止原则：</span>
-          当底部的商两两互质（即除了 1 之外没有共同的因数）时，短除结束。这是小学奥数与初中代数最推荐的速算心算技法。
+          <span className="font-semibold text-slate-800">{t.stopRuleTitle}</span>{' '}
+          {t.stopRuleDesc}
         </div>
       </div>
     </div>

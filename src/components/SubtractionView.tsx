@@ -1,14 +1,18 @@
 import React from 'react';
 import { SubtractionResult } from '../utils/mathEngine';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { MathView } from './MathView';
 import { ScrollText, Sparkles } from 'lucide-react';
 
 interface SubtractionViewProps {
   data: SubtractionResult;
+  lang?: Language;
 }
 
-export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
+export const SubtractionView: React.FC<SubtractionViewProps> = ({ data, lang = 'en' }) => {
   const { initialA, initialB, halvingCount, steps, baseGcd, finalGcd } = data;
+  const t = COMPONENT_TRANSLATIONS[lang].subtraction;
 
   return (
     <div className="space-y-6">
@@ -16,10 +20,10 @@ export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
       <div className="p-4 bg-amber-50/70 border border-amber-200/60 rounded-xl space-y-1.5">
         <div className="flex items-center gap-2 text-amber-900 font-semibold text-sm">
           <ScrollText className="w-4 h-4 text-amber-700" />
-          <span>出自西汉《九章算术》· 方田章</span>
+          <span>{t.quoteTitle}</span>
         </div>
         <p className="text-xs sm:text-sm text-amber-950/80 leading-relaxed font-serif italic">
-          “可半者半之，不可半者，副置分母、子之数，以少减多，更相减损，求其等也。以等数约之。”
+          {t.quoteBody}
         </p>
       </div>
 
@@ -29,19 +33,18 @@ export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-600" />
             <h4 className="font-semibold text-sm text-slate-800">
-              第一阶段：“可半者半之” (偶数折半)
+              {t.halvingTitle}
             </h4>
           </div>
           <p className="text-xs sm:text-sm text-slate-600">
-            原数 ({initialA}, {initialB}) 均为偶数，先同时除以 2 提取出公因数{' '}
-            <span className="font-mono font-bold text-indigo-700">
-              2^{halvingCount} = {Math.pow(2, halvingCount)}
-            </span>
-            ，折半后变为奇偶混合数：
+            {t.halvingDesc(initialA, initialB, halvingCount, Math.pow(2, halvingCount))}
           </p>
           <div className="font-mono text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-slate-800">
-            折半 {halvingCount} 次后新基数：A = {initialA / Math.pow(2, halvingCount)}, B ={' '}
-            {initialB / Math.pow(2, halvingCount)}
+            {t.halvingResult(
+              halvingCount,
+              initialA / Math.pow(2, halvingCount),
+              initialB / Math.pow(2, halvingCount)
+            )}
           </div>
         </div>
       )}
@@ -51,11 +54,11 @@ export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
             <tr>
-              <th className="py-2.5 px-3 sm:px-4 text-center w-14">减法轮次</th>
-              <th className="py-2.5 px-3 sm:px-4">较大数</th>
-              <th className="py-2.5 px-3 sm:px-4">较小数</th>
-              <th className="py-2.5 px-3 sm:px-4 text-indigo-700">减损差 (大 - 小)</th>
-              <th className="py-2.5 px-3 sm:px-4 font-mono">减损算式</th>
+              <th className="py-2.5 px-3 sm:px-4 text-center w-14">{t.colRound}</th>
+              <th className="py-2.5 px-3 sm:px-4">{t.colLarger}</th>
+              <th className="py-2.5 px-3 sm:px-4">{t.colSmaller}</th>
+              <th className="py-2.5 px-3 sm:px-4 text-indigo-700">{t.colDiff}</th>
+              <th className="py-2.5 px-3 sm:px-4 font-mono">{t.colEquation}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-mono">
@@ -69,7 +72,7 @@ export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
                   }`}
                 >
                   <td className="py-2 px-3 sm:px-4 text-center text-slate-400 font-sans">
-                    第 {st.step} 次
+                    #{st.step}
                   </td>
                   <td className="py-2 px-3 sm:px-4">{st.larger}</td>
                   <td className="py-2 px-3 sm:px-4 text-slate-600">{st.smaller}</td>
@@ -90,16 +93,9 @@ export const SubtractionView: React.FC<SubtractionViewProps> = ({ data }) => {
 
       {/* Final conclusion */}
       <div className="p-4 rounded-xl bg-slate-900 text-slate-100 space-y-2">
-        <h4 className="text-sm font-semibold text-amber-300">第二阶段：“以等数约之” (求等数结果)</h4>
+        <h4 className="text-sm font-semibold text-amber-300">{t.conclusionTitle}</h4>
         <p className="text-xs sm:text-sm text-slate-300">
-          当减数与差相等时，即得到“等数” <span className="font-mono text-amber-400 font-bold">{baseGcd}</span>。
-          {halvingCount > 0 ? (
-            <span>
-              再乘以之前折半提取的因子 <MathView math={`2^{${halvingCount}} = ${Math.pow(2, halvingCount)}`} />，最终最大公约数为：
-            </span>
-          ) : (
-            '无需折半补偿，最终最大公约数为：'
-          )}
+          {t.conclusionDesc(baseGcd, halvingCount, finalGcd)}
         </p>
         <div className="p-2.5 bg-slate-800 rounded-lg text-emerald-300 font-mono text-base font-bold">
           <MathView

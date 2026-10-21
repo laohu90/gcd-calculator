@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { EuclideanStep, ExtendedEuclideanResult } from '../utils/mathEngine';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { MathView } from './MathView';
 import { ChevronDown, ChevronUp, Sparkles, BookOpen } from 'lucide-react';
 
@@ -8,25 +10,37 @@ interface EuclideanViewProps {
   extended?: ExtendedEuclideanResult;
   a: bigint;
   b: bigint;
+  lang?: Language;
 }
 
-export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a, b }) => {
+export const EuclideanView: React.FC<EuclideanViewProps> = ({
+  steps,
+  extended,
+  a,
+  b,
+  lang = 'en',
+}) => {
   const [showExtended, setShowExtended] = useState(false);
+  const t = COMPONENT_TRANSLATIONS[lang].euclid;
 
   const finalStep = steps[steps.length - 1];
-  const gcdValue = finalStep ? (finalStep.remainder === 0n ? finalStep.b : finalStep.remainder) : 1n;
+  const gcdValue = finalStep
+    ? finalStep.remainder === 0n
+      ? finalStep.b
+      : finalStep.remainder
+    : 1n;
 
   return (
     <div className="space-y-6">
       {/* Algorithm introduction */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 pb-2 border-b border-slate-200">
         <div>
-          <span className="font-semibold text-slate-700">辗转相除法原理：</span>
+          <span className="font-semibold text-slate-700">{t.principleTitle}</span>
           <span className="font-mono ml-1 text-slate-800">
             <MathView math="\gcd(a, b) = \gcd(b, a \bmod b)" />
           </span>
         </div>
-        <span className="text-slate-400">两千多年前欧几里得在《几何原本》中提出的经典算法</span>
+        <span className="text-slate-400">{t.principleDesc}</span>
       </div>
 
       {/* Step by step table */}
@@ -34,12 +48,12 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
             <tr>
-              <th className="py-3 px-3 sm:px-4 text-center w-14">步骤</th>
-              <th className="py-3 px-3 sm:px-4">被除数 (a)</th>
-              <th className="py-3 px-3 sm:px-4">除数 (b)</th>
-              <th className="py-3 px-3 sm:px-4">商 (q)</th>
-              <th className="py-3 px-3 sm:px-4">余数 (r)</th>
-              <th className="py-3 px-3 sm:px-4 font-mono">带余除法恒等式</th>
+              <th className="py-3 px-3 sm:px-4 text-center w-14">{t.colStep}</th>
+              <th className="py-3 px-3 sm:px-4">{t.colDividend}</th>
+              <th className="py-3 px-3 sm:px-4">{t.colDivisor}</th>
+              <th className="py-3 px-3 sm:px-4">{t.colQuotient}</th>
+              <th className="py-3 px-3 sm:px-4">{t.colRemainder}</th>
+              <th className="py-3 px-3 sm:px-4 font-mono">{t.colEquation}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-mono">
@@ -49,7 +63,9 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
                 <tr
                   key={st.step}
                   className={`transition-colors ${
-                    isLast ? 'bg-indigo-50/70 font-semibold text-indigo-950' : 'hover:bg-slate-50/60'
+                    isLast
+                      ? 'bg-indigo-50/70 font-semibold text-indigo-950'
+                      : 'hover:bg-slate-50/60'
                   }`}
                 >
                   <td className="py-2.5 px-3 sm:px-4 text-center text-slate-400 font-sans">
@@ -83,18 +99,17 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
       <div className="p-4 rounded-xl bg-slate-900 text-slate-100 space-y-2">
         <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
           <BookOpen className="w-4 h-4" />
-          <span>算法结论判定</span>
+          <span>{t.conclusionTitle}</span>
         </div>
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          当步骤 {steps.length} 中余数首次变为 <span className="text-emerald-400 font-mono font-bold">0</span> 时，
-          此时的除数就是两数的最大公约数：
+          {t.conclusionDesc(steps.length)}
         </p>
         <div className="p-2.5 bg-slate-800/80 rounded-lg text-emerald-300 font-mono text-base font-bold flex items-center justify-between">
           <span>
             <MathView math={`\\gcd(${a.toString()}, ${b.toString()}) = ${gcdValue.toString()}`} />
           </span>
           <span className="text-xs text-slate-400 font-sans font-normal">
-            总共耗时 {steps.length} 次带余除法
+            {t.totalSteps(steps.length)}
           </span>
         </div>
       </div>
@@ -110,7 +125,7 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-indigo-600" />
               <span className="font-semibold text-sm text-slate-800">
-                竞赛拓展：裴蜀定理与扩展欧几里得 (Bézout's identity)
+                {t.bezoutToggle}
               </span>
             </div>
             {showExtended ? (
@@ -123,8 +138,7 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
           {showExtended && (
             <div className="p-4 border-t border-slate-100 space-y-3 bg-slate-50/50 text-xs sm:text-sm">
               <p className="text-slate-600">
-                裴蜀定理指出：对于任意整数 <MathView math="a, b" />，一定存在整数解{' '}
-                <MathView math="x, y" /> 满足线性丢番图方程：
+                {t.bezoutDesc}
               </p>
               <div className="p-3 bg-white border border-slate-200 rounded-lg font-mono text-indigo-900 font-semibold">
                 <MathView
@@ -132,8 +146,7 @@ export const EuclideanView: React.FC<EuclideanViewProps> = ({ steps, extended, a
                 />
               </div>
               <div className="text-xs text-slate-500">
-                特解结果：<span className="font-mono text-slate-800 font-semibold">x = {extended.x.toString()}</span>，
-                <span className="font-mono text-slate-800 font-semibold ml-2">y = {extended.y.toString()}</span>
+                {t.bezoutSolution(extended.x.toString(), extended.y.toString())}
               </div>
             </div>
           )}

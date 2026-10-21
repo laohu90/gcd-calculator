@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { multiGcd } from '../utils/mathEngine';
+import { Language } from '../utils/i18n';
+import { COMPONENT_TRANSLATIONS } from '../utils/componentTranslations';
 import { MathView } from './MathView';
 import { Divide, Split, CheckCircle2, ArrowRight } from 'lucide-react';
 
@@ -9,11 +11,17 @@ interface PolynomialTerm {
   yPower: number;
 }
 
-export const FactoringTool: React.FC = () => {
+interface FactoringToolProps {
+  lang?: Language;
+}
+
+export const FactoringTool: React.FC<FactoringToolProps> = ({ lang = 'en' }) => {
+  const t = COMPONENT_TRANSLATIONS[lang].factoring;
+
   // Preset polynomials for middle school practice
   const presets: { label: string; terms: PolynomialTerm[] }[] = [
     {
-      label: '例题 1: 12x³y² + 18x²y³ - 24x²y',
+      label: `${lang === 'zh' ? '例题 1' : lang === 'es' ? 'Ej 1' : 'Ex 1'}: 12x³y² + 18x²y³ - 24x²y`,
       terms: [
         { coeff: 12, xPower: 3, yPower: 2 },
         { coeff: 18, xPower: 2, yPower: 3 },
@@ -21,7 +29,7 @@ export const FactoringTool: React.FC = () => {
       ],
     },
     {
-      label: '例题 2: 8x²y - 12xy² + 4xy',
+      label: `${lang === 'zh' ? '例题 2' : lang === 'es' ? 'Ej 2' : 'Ex 2'}: 8x²y - 12xy² + 4xy`,
       terms: [
         { coeff: 8, xPower: 2, yPower: 1 },
         { coeff: -12, xPower: 1, yPower: 2 },
@@ -29,7 +37,7 @@ export const FactoringTool: React.FC = () => {
       ],
     },
     {
-      label: '例题 3: 15x⁴ - 25x²',
+      label: `${lang === 'zh' ? '例题 3' : lang === 'es' ? 'Ej 3' : 'Ex 3'}: 15x⁴ - 25x²`,
       terms: [
         { coeff: 15, xPower: 4, yPower: 0 },
         { coeff: -25, xPower: 2, yPower: 0 },
@@ -45,10 +53,10 @@ export const FactoringTool: React.FC = () => {
   const [fracDen, setFracDen] = useState<string>('126');
 
   // Compute polynomial factor
-  const coeffBigInts = terms.map((t) => BigInt(Math.abs(t.coeff)));
+  const coeffBigInts = terms.map((term) => BigInt(Math.abs(term.coeff)));
   const gcdCoeff = Number(multiGcd(coeffBigInts));
-  const minXPower = Math.min(...terms.map((t) => t.xPower));
-  const minYPower = Math.min(...terms.map((t) => t.yPower));
+  const minXPower = Math.min(...terms.map((term) => term.xPower));
+  const minYPower = Math.min(...terms.map((term) => term.yPower));
 
   const formatTerm = (c: number, xP: number, yP: number, isLeading = false) => {
     let s = '';
@@ -69,17 +77,17 @@ export const FactoringTool: React.FC = () => {
   };
 
   const originalStr = terms
-    .map((t, idx) => formatTerm(t.coeff, t.xPower, t.yPower, idx === 0))
+    .map((term, idx) => formatTerm(term.coeff, term.xPower, term.yPower, idx === 0))
     .join(' ');
 
-  const remainingTerms = terms.map((t) => ({
-    coeff: t.coeff / gcdCoeff,
-    xPower: t.xPower - minXPower,
-    yPower: t.yPower - minYPower,
+  const remainingTerms = terms.map((term) => ({
+    coeff: term.coeff / gcdCoeff,
+    xPower: term.xPower - minXPower,
+    yPower: term.yPower - minYPower,
   }));
 
   const remainingStr = remainingTerms
-    .map((t, idx) => formatTerm(t.coeff, t.xPower, t.yPower, idx === 0))
+    .map((term, idx) => formatTerm(term.coeff, term.xPower, term.yPower, idx === 0))
     .join(' ');
 
   let gcfVars = '';
@@ -106,13 +114,13 @@ export const FactoringTool: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-indigo-700 font-semibold text-sm">
             <Split className="w-4 h-4" />
-            <span>初中因式分解：提公因式法 (三步确定公因式)</span>
+            <span>{t.methodBadge}</span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 mt-1">
-            多项式公因式智能提取与拆解
+            {t.title}
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            初中代数因式分解第一法则：先看有没有公因式。公因式 = 系数最大公约数 × 相同字母最低次幂。
+            {t.subtitle}
           </p>
         </div>
 
@@ -141,13 +149,13 @@ export const FactoringTool: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
             <div className="text-xs text-indigo-700 font-bold uppercase tracking-wider">
-              第 1 步：定系数
+              {lang === 'zh' ? '第 1 步：定系数' : lang === 'es' ? 'Paso 1: Coeficientes' : 'Step 1: Coefficients'}
             </div>
             <div className="text-sm font-semibold text-slate-800">
-              系数绝对值的 GCD
+              {lang === 'zh' ? '系数绝对值的 GCD' : 'GCD of Coefficients'}
             </div>
             <p className="text-xs text-slate-600">
-              各单项式系数 [{terms.map((t) => Math.abs(t.coeff)).join(', ')}] 的最大公约数：
+              [{terms.map((term) => Math.abs(term.coeff)).join(', ')}]
             </p>
             <div className="p-2 bg-white rounded border border-slate-200 font-mono text-indigo-900 font-bold text-sm">
               GCD = {gcdCoeff}
@@ -156,31 +164,31 @@ export const FactoringTool: React.FC = () => {
 
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
             <div className="text-xs text-indigo-700 font-bold uppercase tracking-wider">
-              第 2 步：定字母
+              {lang === 'zh' ? '第 2 步：定字母' : lang === 'es' ? 'Paso 2: Variables' : 'Step 2: Variables'}
             </div>
             <div className="text-sm font-semibold text-slate-800">
-              各项都包含的共同字母
+              {lang === 'zh' ? '共同字母因子' : 'Common Variables'}
             </div>
             <p className="text-xs text-slate-600">
-              检查多项式每一项是否均含有变量 x 与 y：
+              {lang === 'zh' ? '检查各单项式公有字母：' : 'Shared literal terms:'}
             </p>
             <div className="p-2 bg-white rounded border border-slate-200 font-mono text-slate-800 font-semibold text-sm">
-              含有字母：{[minXPower > 0 ? 'x' : null, minYPower > 0 ? 'y' : null].filter(Boolean).join('、') || '无共同字母'}
+              {[minXPower > 0 ? 'x' : null, minYPower > 0 ? 'y' : null].filter(Boolean).join(' , ') || (lang === 'zh' ? '无共同字母' : 'None')}
             </div>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
             <div className="text-xs text-indigo-700 font-bold uppercase tracking-wider">
-              第 3 步：定指数
+              {lang === 'zh' ? '第 3 步：定指数' : lang === 'es' ? 'Paso 3: Exponentes' : 'Step 3: Exponents'}
             </div>
             <div className="text-sm font-semibold text-slate-800">
-              相同字母的最低次幂
+              {lang === 'zh' ? '字母最低次幂' : 'Lowest Exponent'}
             </div>
             <p className="text-xs text-slate-600">
-              取各字母在各项中出现的最小指数：
+              min(degree)
             </p>
             <div className="p-2 bg-white rounded border border-slate-200 font-mono text-indigo-900 font-bold text-sm">
-              {gcfVars || '无次数'}
+              {gcfVars || '-'}
             </div>
           </div>
         </div>
@@ -188,8 +196,8 @@ export const FactoringTool: React.FC = () => {
         {/* Factored Result Banner */}
         <div className="p-5 rounded-xl bg-slate-900 text-slate-100 space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>提公因式最终结果 (Factored Expression)</span>
-            <span className="text-emerald-400 font-semibold">提取公因式：{gcfStr}</span>
+            <span>{t.step2Title}</span>
+            <span className="text-emerald-400 font-semibold">GCF: {gcfStr}</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-base sm:text-lg font-mono">
@@ -209,21 +217,18 @@ export const FactoringTool: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-indigo-700 font-semibold text-sm">
             <Divide className="w-4 h-4" />
-            <span>小学与初中基础：分数约分 (Reduction of Fractions)</span>
+            <span>{t.fractionTitle}</span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 mt-1">
-            利用 GCD 化简最简分数
+            {t.fractionSubtitle}
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            分子和分母同时除以它们的最大公约数，即可一步化为最简分数。
-          </p>
         </div>
 
         {/* Fraction Inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              分子 (Numerator)
+              {t.numLabel}
             </label>
             <input
               type="number"
@@ -234,7 +239,7 @@ export const FactoringTool: React.FC = () => {
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              分母 (Denominator)
+              {t.denLabel}
             </label>
             <input
               type="number"
@@ -249,7 +254,7 @@ export const FactoringTool: React.FC = () => {
         <div className="p-5 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-4">
           <div className="flex items-center gap-2 text-indigo-950 font-semibold text-sm">
             <CheckCircle2 className="w-4 h-4 text-indigo-600" />
-            <span>一步到位约分过程图解</span>
+            <span>{t.gcdFound(fracGcd)}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-base sm:text-lg font-mono">
@@ -276,10 +281,8 @@ export const FactoringTool: React.FC = () => {
           </div>
 
           <div className="text-xs text-slate-600">
-            分子和分母的最大公因数是{' '}
-            <span className="font-bold font-mono text-indigo-700">{fracGcd}</span>。约分后，分子与分母{' '}
-            <span className="font-bold font-mono text-slate-800">({simplifiedNum}, {simplifiedDen})</span>{' '}
-            两数互质，即满足最简分数定义。
+            {t.reducedResult}{' '}
+            <span className="font-bold font-mono text-slate-800">({simplifiedNum}/{simplifiedDen})</span>.
           </div>
         </div>
       </div>
