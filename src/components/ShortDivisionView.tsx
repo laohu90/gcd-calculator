@@ -11,7 +11,7 @@ interface ShortDivisionViewProps {
 }
 
 export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data, lang = 'en' }) => {
-  const { initialNumbers, steps, finalQuotients, gcdDivisors, gcd, lcm } = data;
+  const { initialNumbers, steps, finalQuotients, gcdDivisors, gcd, lcmDivisors = gcdDivisors, lcm } = data;
   const t = COMPONENT_TRANSLATIONS[lang].shortDivision;
 
   if (steps.length === 0) {
@@ -91,7 +91,7 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data, lang
           </p>
           <div className="bg-white p-3 rounded-lg border border-indigo-150 text-indigo-900 font-mono text-sm sm:text-base font-semibold">
             <MathView
-              math={`\\gcd(${initialNumbers.join(', ')}) = ${gcdDivisors.join(' \\times ')} = ${gcd}`}
+              math={`\\gcd(${initialNumbers.join(', ')}) = ${gcdDivisors.length > 0 ? gcdDivisors.join(' \\times ') : '1'} = ${gcd}`}
             />
           </div>
         </div>
@@ -109,7 +109,7 @@ export const ShortDivisionView: React.FC<ShortDivisionViewProps> = ({ data, lang
           </p>
           <div className="bg-white p-3 rounded-lg border border-amber-150 text-amber-900 font-mono text-sm sm:text-base font-semibold break-all">
             <MathView
-              math={`\\operatorname{lcm}(${initialNumbers.join(', ')}) = ${[...gcdDivisors, ...finalQuotients].join(' \\times ')} = ${lcm}`}
+              math={`\\operatorname{lcm}(${initialNumbers.join(', ')}) = ${[...lcmDivisors, ...finalQuotients].join(' \\times ')} = ${lcm}`}
             />
           </div>
         </div>

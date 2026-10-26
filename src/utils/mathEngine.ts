@@ -27,6 +27,8 @@ export interface ExtendedEuclideanResult {
 export interface ShortDivisionRow {
   divisor: number;
   quotients: number[];
+  dividedAll?: boolean;
+  dividedIndices?: number[];
 }
 
 export interface ShortDivisionResult {
@@ -156,6 +158,40 @@ export function getEuclideanSteps(a: bigint, b: bigint): EuclideanStep[] {
   return steps;
 }
 
+export interface MultiEuclideanStage {
+  stageIndex: number;
+  numA: bigint;
+  numB: bigint;
+  steps: EuclideanStep[];
+  gcd: bigint;
+  description: string;
+}
+
+export function getMultiEuclideanSteps(numbers: bigint[]): MultiEuclideanStage[] {
+  const valid = numbers.map(n => (n < 0n ? -n : n)).filter(n => n > 0n);
+  if (valid.length < 2) return [];
+
+  const stages: MultiEuclideanStage[] = [];
+  let currentGcd = valid[0];
+
+  for (let i = 1; i < valid.length; i++) {
+    const nextNum = valid[i];
+    const steps = getEuclideanSteps(currentGcd, nextNum);
+    const stageGcd = bigIntGcd(currentGcd, nextNum);
+    stages.push({
+      stageIndex: i,
+      numA: currentGcd,
+      numB: nextNum,
+      steps,
+      gcd: stageGcd,
+      description: `Stage ${i}: gcd(${currentGcd}, ${nextNum}) = ${stageGcd}`,
+    });
+    currentGcd = stageGcd;
+  }
+
+  return stages;
+}
+
 // Extended Euclidean Algorithm (Bezout's Identity: ax + by = gcd(a, b))
 export function getExtendedEuclidean(a: bigint, b: bigint): ExtendedEuclideanResult {
   let old_r = a, r = b;
@@ -234,42 +270,68 @@ export function formatPrimeFactors(factors: PrimeFactor[]): string {
     .join(' × ');
 }
 
+// Helper: Fast prime check
+function isPrimeNumber(n: number): boolean {
+  if (n < 2) return false;
+  if (n === 2 || n === 3) return true;
+  if (n % 2 === 0 || n % 3 === 0) return false;
+  for (let i = 5; i * i <= n; i += 6) {
+    if (n % i === 0 || n % (i + 2) === 0) return false;
+  }
+  return true;
+}
+
 // Helper: Find the smallest prime divisor dividing all numbers
-function findCommonPrimeDivisor(nums: number[]): number | null {
+function findCommonPrimeDivisorAll(nums: number[]): number | null {
   const minVal = Math.min(...nums);
   if (minVal <= 1) return null;
 
   if (nums.every((n) => n % 2 === 0)) return 2;
 
-  for (let d = 3; d * d <= minVal; d += 2) {
+  for (let d = 3; d <= minVal; d += 2) {
     if (nums.every((n) => n % d === 0)) {
-      return d;
+      if (isPrimeNumber(d)) return d;
     }
-  }
-
-  // If minVal itself is a common prime divisor
-  if (minVal > 1 && nums.every((n) => n % minVal === 0)) {
-    return minVal;
   }
 
   return null;
 }
 
-// Short Division for 2 or 3 numbers (小学奥数经典短除法)
+// Helper: Find the smallest prime divisor dividing at least 2 numbers (for LCM coprime reduction)
+function findCommonPrimeDivisorAtLeastTwo(nums: number[]): number | null {
+  const maxVal = Math.max(...nums);
+  if (maxVal <= 1) return null;
+
+  if (nums.filter((n) => n % 2 === 0).length >= 2) return 2;
+
+  for (let d = 3; d <= maxVal; d += 2) {
+    if (nums.filter((n) => n % d === 0).length >= 2) {
+      if (isPrimeNumber(d)) return d;
+    }
+  }
+
+  return null;
+}
+
+// Short Division for 2 or more numbers (小学奥数阶梯法/短除法)
 export function getShortDivision(numbers: number[]): ShortDivisionResult {
   const current = numbers.map((n) => Math.max(1, Math.floor(Math.abs(n))));
   const steps: ShortDivisionRow[] = [];
   const gcdDivisors: number[] = [];
+  const lcmOnlyDivisors: number[] = [];
 
   let iterations = 0;
-  while (iterations < 60) {
+  // Phase 1: Divide all numbers by common prime factors (GCD divisors)
+  while (iterations < 100) {
     iterations++;
-    const p = findCommonPrimeDivisor(current);
+    const p = findCommonPrimeDivisorAll(current);
     if (!p) break;
 
     steps.push({
       divisor: p,
       quotients: [...current],
+      dividedAll: true,
+      dividedIndices: current.map((_, idx) => idx),
     });
     gcdDivisors.push(p);
     for (let i = 0; i < current.length; i++) {
@@ -277,8 +339,38 @@ export function getShortDivision(numbers: number[]): ShortDivisionResult {
     }
   }
 
-  const gcd = gcdDivisors.reduce((acc, v) => acc * v, 1);
-  const lcm = gcd * current.reduce((acc, v) => acc * v, 1);
+  // Phase 2: If 3 or more numbers, continue dividing if any prime divides >= 2 numbers
+  // This satisfies: "Stop dividing when the quotients on the bottom are pairwise coprime"
+  if (numbers.length >= 3) {
+    while (iterations < 100) {
+      iterations++;
+      const p = findCommonPrimeDivisorAtLeastTwo(current);
+      if (!p) break;
+
+      const dividedIndices: number[] = [];
+      const rowQuotients = [...current];
+      for (let i = 0; i < current.length; i++) {
+        if (current[i] % p === 0) {
+          dividedIndices.push(i);
+          current[i] /= p;
+        }
+      }
+
+      steps.push({
+        divisor: p,
+        quotients: rowQuotients,
+        dividedAll: dividedIndices.length === current.length,
+        dividedIndices,
+      });
+      lcmOnlyDivisors.push(p);
+    }
+  }
+
+  const gcd = gcdDivisors.length > 0 ? gcdDivisors.reduce((acc, v) => acc * v, 1) : 1;
+  const allDivisors = [...gcdDivisors, ...lcmOnlyDivisors];
+  const allDivisorsProduct = allDivisors.length > 0 ? allDivisors.reduce((acc, v) => acc * v, 1) : 1;
+  const finalQuotientsProduct = current.reduce((acc, v) => acc * v, 1);
+  const lcm = allDivisorsProduct * finalQuotientsProduct;
 
   return {
     initialNumbers: [...numbers],
@@ -286,7 +378,7 @@ export function getShortDivision(numbers: number[]): ShortDivisionResult {
     finalQuotients: current,
     gcdDivisors,
     gcd,
-    lcmDivisors: gcdDivisors,
+    lcmDivisors: allDivisors,
     lcmFinal: current,
     lcm,
   };

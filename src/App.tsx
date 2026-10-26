@@ -9,6 +9,7 @@ import {
   getShortDivision,
   getSuccessiveSubtractions,
   getDivisors,
+  getMultiEuclideanSteps,
 } from './utils/mathEngine';
 import { translations, Language } from './utils/i18n';
 import { Navbar } from './components/Navbar';
@@ -46,6 +47,8 @@ import {
   Table,
   HelpCircle,
   FileText,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 
 export default function App() {
@@ -139,59 +142,104 @@ export default function App() {
     }
   }, [mode, numAStr, numBStr, multiInputStr, lang]);
 
-  // Parse numbers safely
-  const parsedA = useMemo(() => {
-    try {
-      const clean = numAStr.replace(/[^0-9]/g, '');
-      return clean ? BigInt(clean) : 0n;
-    } catch {
-      return 0n;
+  // Helper to parse input integer safely with sign and validity detection
+  const parseToken = useCallback((str: string) => {
+    const trimmed = str.trim();
+    if (!trimmed) {
+      return { value: 0n, absVal: 0n, isValid: true, isNegative: false };
     }
-  }, [numAStr]);
-
-  const parsedB = useMemo(() => {
-    try {
-      const clean = numBStr.replace(/[^0-9]/g, '');
-      return clean ? BigInt(clean) : 0n;
-    } catch {
-      return 0n;
-    }
-  }, [numBStr]);
-
-  const parsedMulti = useMemo(() => {
-    const tokens = multiInputStr.split(/[,，\s]+/).filter(Boolean);
-    const nums: bigint[] = [];
-    for (const token of tokens) {
+    if (/^-?\d+$/.test(trimmed)) {
       try {
-        const c = token.replace(/[^0-9]/g, '');
-        if (c) nums.push(BigInt(c));
+        const val = BigInt(trimmed);
+        return {
+          value: val,
+          absVal: val < 0n ? -val : val,
+          isValid: true,
+          isNegative: val < 0n,
+        };
       } catch {
-        // ignore
+        return { value: 0n, absVal: 0n, isValid: false, isNegative: false };
       }
     }
-    return nums.length > 0 ? nums : [0n];
-  }, [multiInputStr]);
+    return { value: 0n, absVal: 0n, isValid: false, isNegative: false };
+  }, []);
 
-  // Calculations for Two-Number Mode
-  const twoGcd = useMemo(() => bigIntGcd(parsedA, parsedB), [parsedA, parsedB]);
-  const twoLcm = useMemo(() => bigIntLcm(parsedA, parsedB), [parsedA, parsedB]);
-  const isCoprime = twoGcd === 1n && parsedA > 1n && parsedB > 1n;
+  const parseResultA = useMemo(() => parseToken(numAStr), [numAStr, parseToken]);
+  const parseResultB = useMemo(() => parseToken(numBStr), [numBStr, parseToken]);
+  const parsedA = parseResultA.value;
+  const parsedB = parseResultB.value;
+  const absA = parseResultA.absVal;
+  const absB = parseResultB.absVal;
 
-  // Fraction simplification for two-number mode
+  const parsedMultiTokens = useMemo(() => {
+    const tokens = multiInputStr.split(/[,，\s]+/).filter(Boolean);
+    const nums: bigint[] = [];
+    const absNums: bigint[] = [];
+    const invalidList: string[] = [];
+    for (const t of tokens) {
+      const res = parseToken(t);
+      if (!res.isValid) {
+        invalidList.push(t);
+      } else {
+        nums.push(res.value);
+        absNums.push(res.absVal);
+      }
+    }
+    return {
+      nums: nums.length > 0 ? nums : [0n],
+      absNums: absNums.length > 0 ? absNums : [0n],
+      hasInvalid: invalidList.length > 0,
+      invalidTokens: invalidList,
+    };
+  }, [multiInputStr, parseToken]);
+
+  const parsedMulti = parsedMultiTokens.nums;
+  const parsedMultiAbs = parsedMultiTokens.absNums;
+
+  // Validation Error message
+  const inputErrorMessage = useMemo(() => {
+    if (mode === 'two') {
+      const errs: string[] = [];
+      if (!parseResultA.isValid) errs.push(`"${numAStr}"`);
+      if (!parseResultB.isValid) errs.push(`"${numBStr}"`);
+      if (errs.length > 0) {
+        return lang === 'zh'
+          ? `输入格式无效 ${errs.join('、')}：请输入有效整数（支持负数，不能包含字母或其他非数字符号）`
+          : `Invalid format ${errs.join(', ')}: Please enter valid integers (letters and non-numeric symbols are not allowed).`;
+      }
+    } else if (parsedMultiTokens.hasInvalid) {
+      return lang === 'zh'
+        ? `多数字中包含无效格式 "${parsedMultiTokens.invalidTokens.join(', ')}"：请输入逗号分隔的整数`
+        : `Invalid input "${parsedMultiTokens.invalidTokens.join(', ')}": Please enter comma-separated integers.`;
+    }
+    return null;
+  }, [mode, parseResultA.isValid, parseResultB.isValid, numAStr, numBStr, parsedMultiTokens, lang]);
+
+  // Special gcd(0, 0) condition
+  const isGcdZeroZero = mode === 'two'
+    ? (parsedA === 0n && parsedB === 0n && parseResultA.isValid && parseResultB.isValid)
+    : (parsedMulti.every((n) => n === 0n) && !parsedMultiTokens.hasInvalid);
+
+  // Calculations for Two-Number Mode (GCD & LCM are strictly non-negative)
+  const twoGcd = useMemo(() => bigIntGcd(absA, absB), [absA, absB]);
+  const twoLcm = useMemo(() => bigIntLcm(absA, absB), [absA, absB]);
+  const isCoprime = twoGcd === 1n && absA > 1n && absB > 1n;
+
+  // Fraction simplification for two-number mode (accurately preserves negative sign!)
   const fractionReduction = useMemo(() => {
     if (parsedB === 0n) return null;
     return simplifyFraction(parsedA, parsedB);
   }, [parsedA, parsedB]);
 
   // Multi-number calculations
-  const multiGcdVal = useMemo(() => multiGcd(parsedMulti), [parsedMulti]);
-  const multiLcmVal = useMemo(() => multiLcm(parsedMulti), [parsedMulti]);
+  const multiGcdVal = useMemo(() => multiGcd(parsedMultiAbs), [parsedMultiAbs]);
+  const multiLcmVal = useMemo(() => multiLcm(parsedMultiAbs), [parsedMultiAbs]);
 
   // Dynamic Document Title and HTML lang attribute for SEO indexing across 5 languages
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
 
-    const hasNumbers = mode === 'two' && parsedA > 0n && parsedB > 0n;
+    const hasNumbers = mode === 'two' && absA > 0n && absB > 0n;
     const titles: Record<Language, string> = {
       en: hasNumbers
         ? `GCD of ${parsedA} and ${parsedB} is ${twoGcd} | Step-by-Step Calculator`
@@ -210,32 +258,45 @@ export default function App() {
         : '最大公约数GCD计算器 - 在线求最大公因数与最小公倍数(含短除法与详细步骤)',
     };
     document.title = titles[lang] || titles.en;
-  }, [mode, parsedA, parsedB, twoGcd, lang]);
+  }, [mode, parsedA, parsedB, absA, absB, twoGcd, lang]);
 
   // Safe numbers for visualizers
-  const safeA = Number(parsedA > 1000000n ? 1000000n : parsedA);
-  const safeB = Number(parsedB > 1000000n ? 1000000n : parsedB);
+  const safeA = Number(absA > 1000000n ? 1000000n : absA);
+  const safeB = Number(absB > 1000000n ? 1000000n : absB);
   const safeGcd = Number(twoGcd > 1000000n ? 1000000n : twoGcd);
 
   // Euclidean steps
   const euclideanSteps = useMemo(() => {
-    if (parsedA <= 0n || parsedB <= 0n) return [];
-    return getEuclideanSteps(parsedA, parsedB);
-  }, [parsedA, parsedB]);
+    if (absA <= 0n || absB <= 0n) return [];
+    return getEuclideanSteps(absA, absB);
+  }, [absA, absB]);
+
+  // Multi-number Euclidean stages
+  const multiEuclideanStages = useMemo(() => {
+    if (mode !== 'multi') return [];
+    return getMultiEuclideanSteps(parsedMultiAbs);
+  }, [mode, parsedMultiAbs]);
 
   // Extended Euclidean
   const extendedEuclid = useMemo(() => {
-    if (parsedA <= 0n || parsedB <= 0n) return undefined;
-    return getExtendedEuclidean(parsedA, parsedB);
-  }, [parsedA, parsedB]);
+    if (absA <= 0n || absB <= 0n) return undefined;
+    return getExtendedEuclidean(absA, absB);
+  }, [absA, absB]);
 
-  // Short division data
+  // Short division data (supports both 2 numbers and multi numbers!)
   const shortDivData = useMemo(() => {
+    if (mode === 'multi') {
+      const multiList = parsedMultiAbs
+        .map((n) => Number(n > 1000000n ? 1000000n : n))
+        .filter((n) => n > 0);
+      if (multiList.length < 2) return getShortDivision([12, 18, 24]);
+      return getShortDivision(multiList);
+    }
     if (safeA <= 1 || safeB <= 1) {
       return getShortDivision([Math.max(1, safeA), Math.max(1, safeB)]);
     }
     return getShortDivision([safeA, safeB]);
-  }, [safeA, safeB]);
+  }, [mode, parsedMultiAbs, safeA, safeB]);
 
   // Subtraction data
   const subtractionData = useMemo(() => {
@@ -434,6 +495,27 @@ export default function App() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
               {/* Left Column: Number inputs & common divisors (7 cols) */}
               <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
+                {/* Error Banner for invalid inputs */}
+                {inputErrorMessage && (
+                  <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{inputErrorMessage}</span>
+                  </div>
+                )}
+
+                {/* Mathematical Notice for gcd(0, 0) */}
+                {isGcdZeroZero && (
+                  <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                    <div>
+                      <span className="font-semibold">{lang === 'zh' ? '数学特别说明：' : 'Mathematical Note: '}</span>
+                      {lang === 'zh'
+                        ? 'gcd(0, 0) 在严格数学上未定义 (Undefined / Indeterminate)，因为任何整数都能整除 0。在计算机代数系统中通常约定返回 0。'
+                        : 'gcd(0, 0) is mathematically undefined (indeterminate) because every integer divides 0. The standard programming convention returns 0.'}
+                    </div>
+                  </div>
+                )}
+
                 {mode === 'two' ? (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -442,11 +524,12 @@ export default function App() {
                       </label>
                       <input
                         type="text"
-                        inputMode="numeric"
                         value={numAStr}
                         onChange={(e) => setNumAStr(e.target.value)}
                         placeholder="48"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className={`w-full px-3 py-2 rounded-lg border font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          !parseResultA.isValid ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300'
+                        }`}
                       />
                     </div>
                     <div>
@@ -455,11 +538,12 @@ export default function App() {
                       </label>
                       <input
                         type="text"
-                        inputMode="numeric"
                         value={numBStr}
                         onChange={(e) => setNumBStr(e.target.value)}
                         placeholder="72"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className={`w-full px-3 py-2 rounded-lg border font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          !parseResultB.isValid ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300'
+                        }`}
                       />
                     </div>
                   </div>
@@ -473,7 +557,9 @@ export default function App() {
                       value={multiInputStr}
                       onChange={(e) => setMultiInputStr(e.target.value)}
                       placeholder="84, 126, 210, 420"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className={`w-full px-3 py-2 rounded-lg border font-mono text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                        parsedMultiTokens.hasInvalid ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300'
+                      }`}
                     />
                   </div>
                 )}
@@ -511,13 +597,19 @@ export default function App() {
                       {lang === 'zh' ? '最大公因数 GCD' : lang === 'es' ? 'MCD' : lang === 'fr' ? 'PGCD' : lang === 'pt' ? 'MDC' : 'GCD / GCF'}
                     </div>
                     <div className="text-xl sm:text-2xl font-black font-mono text-indigo-900 tracking-tight mt-0.5">
-                      {mode === 'two' ? twoGcd.toString() : multiGcdVal.toString()}
+                      {isGcdZeroZero
+                        ? (lang === 'zh' ? '未定义' : 'Undefined')
+                        : (mode === 'two' ? twoGcd.toString() : multiGcdVal.toString())}
                     </div>
-                    {mode === 'two' && isCoprime && (
+                    {isGcdZeroZero ? (
+                      <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 mt-1">
+                        {lang === 'zh' ? '约定: 0' : 'Convention: 0'}
+                      </span>
+                    ) : mode === 'two' && isCoprime ? (
                       <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 mt-1">
                         {t.coprimeBadge}
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* LCM Result */}
@@ -532,7 +624,7 @@ export default function App() {
                 </div>
 
                 {/* Instant Fraction Reduction Metric (Traffic Booster) */}
-                {mode === 'two' && fractionReduction && parsedB > 0n && (
+                {mode === 'two' && fractionReduction && parsedB !== 0n && (
                   <div className="p-2 bg-white/95 rounded-lg border border-indigo-100 flex items-center justify-between text-xs font-mono shadow-2xs">
                     <div className="flex items-center gap-1.5 text-indigo-950 font-bold truncate">
                       <Divide className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
@@ -888,10 +980,17 @@ export default function App() {
                     a={parsedA}
                     b={parsedB}
                     lang={lang}
+                    multiStages={mode === 'multi' ? multiEuclideanStages : undefined}
+                    allNumbers={mode === 'multi' ? parsedMulti : undefined}
                   />
                 )}
                 {activeAlgoTab === 'prime' && (
-                  <PrimeFactorView a={safeA} b={safeB} lang={lang} />
+                  <PrimeFactorView
+                    a={safeA}
+                    b={safeB}
+                    lang={lang}
+                    multiNumbers={mode === 'multi' ? parsedMultiAbs.map((n) => Number(n)) : undefined}
+                  />
                 )}
                 {activeAlgoTab === 'subtraction' && (
                   <SubtractionView data={subtractionData} lang={lang} />

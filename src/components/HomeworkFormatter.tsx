@@ -21,8 +21,10 @@ export const HomeworkFormatter: React.FC<HomeworkFormatterProps> = ({
   const safeB = Number(b > 1000000n ? 1000000n : b);
 
   const standardText = useMemo(() => {
-    return generateHomeworkText(safeA, safeB, lang);
-  }, [safeA, safeB, lang]);
+    const g = Number(bigIntGcd(a, b));
+    const l = Number(bigIntLcm(a, b));
+    return generateHomeworkText(safeA, safeB, g, l, lang);
+  }, [safeA, safeB, a, b, lang]);
 
   const latexCode = useMemo(() => {
     return formatLatexSolution(a, b);

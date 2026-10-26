@@ -9,10 +9,124 @@ interface PrimeFactorViewProps {
   a: number;
   b: number;
   lang?: Language;
+  multiNumbers?: number[];
 }
 
-export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({ a, b, lang = 'en' }) => {
+export const PrimeFactorView: React.FC<PrimeFactorViewProps> = ({
+  a,
+  b,
+  lang = 'en',
+  multiNumbers,
+}) => {
   const t = COMPONENT_TRANSLATIONS[lang].primeFactor;
+
+  // Multi-number Prime Factorization Mode
+  if (multiNumbers && multiNumbers.length > 2) {
+    const list = multiNumbers.filter(n => n > 0);
+    const parsed = list.map(n => ({ n, factors: getPrimeFactorization(n) }));
+    
+    // Find all unique primes
+    const allPrimesSet = new Set<number>();
+    parsed.forEach(item => item.factors.forEach(f => allPrimesSet.add(f.prime)));
+    const allPrimes = Array.from(allPrimesSet).sort((x, y) => x - y);
+
+    // Compute min and max powers for each prime
+    const primeRows = allPrimes.map(p => {
+      const powers = parsed.map(item => {
+        const found = item.factors.find(f => f.prime === p);
+        return found ? found.exponent : 0;
+      });
+      const minPower = Math.min(...powers);
+      const maxPower = Math.max(...powers);
+      return { prime: p, powers, minPower, maxPower };
+    });
+
+    const gcdTokens = primeRows
+      .filter(r => r.minPower > 0)
+      .map(r => r.minPower === 1 ? `${r.prime}` : `${r.prime}^{${r.minPower}}`);
+    const finalGcd = primeRows.reduce((acc, r) => acc * Math.pow(r.prime, r.minPower), 1);
+
+    const lcmTokens = primeRows
+      .filter(r => r.maxPower > 0)
+      .map(r => r.maxPower === 1 ? `${r.prime}` : `${r.prime}^{${r.maxPower}}`);
+    const finalLcm = primeRows.reduce((acc, r) => acc * Math.pow(r.prime, r.maxPower), 1);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 pb-2 border-b border-slate-200">
+          <div>
+            <span className="font-semibold text-slate-700">
+              {lang === 'zh' ? '多数字质因数分解法' : 'Multi-Number Prime Factorization'}
+            </span>
+            <span className="ml-2 text-slate-500">
+              {lang === 'zh' ? 'GCD 取各质因数最小幂次，LCM 取各质因数最大幂次' : 'GCD takes min powers, LCM takes max powers'}
+            </span>
+          </div>
+        </div>
+
+        {/* Individual factorizations */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {parsed.map(item => (
+            <div key={item.n} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+              <span className="text-xs font-semibold text-slate-500">数字 {item.n}</span>
+              <div className="text-lg font-mono font-bold text-indigo-900 mt-1">
+                <MathView math={`${item.n} = ${formatPrimeFactors(item.factors)}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Powers Matrix Table */}
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-slate-100 text-slate-700 font-sans font-semibold">
+              <tr>
+                <th className="py-2.5 px-3">质数 (Prime)</th>
+                {parsed.map(item => (
+                  <th key={item.n} className="py-2.5 px-3 text-center">幂次 ({item.n})</th>
+                ))}
+                <th className="py-2.5 px-3 text-center bg-indigo-50/70 text-indigo-900">最小幂 (GCD)</th>
+                <th className="py-2.5 px-3 text-center bg-amber-50/70 text-amber-900">最大幂 (LCM)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {primeRows.map(r => (
+                <tr key={r.prime} className="hover:bg-slate-50">
+                  <td className="py-2 px-3 font-bold text-slate-800">{r.prime}</td>
+                  {r.powers.map((p, idx) => (
+                    <td key={idx} className="py-2 px-3 text-center text-slate-600">{p}</td>
+                  ))}
+                  <td className="py-2 px-3 text-center font-bold bg-indigo-50/40 text-indigo-700">{r.minPower}</td>
+                  <td className="py-2 px-3 text-center font-bold bg-amber-50/40 text-amber-700">{r.maxPower}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Result Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-150 space-y-1">
+            <span className="text-xs font-semibold text-indigo-800">
+              {lang === 'zh' ? '最大公因数 GCD（取公共质因数最低幂）：' : 'GCD (Min Powers of Shared Primes):'}
+            </span>
+            <div className="text-lg font-bold font-mono text-indigo-950">
+              <MathView math={`\\gcd(${list.join(', ')}) = ${gcdTokens.length > 0 ? gcdTokens.join(' \\times ') : '1'} = ${finalGcd}`} />
+            </div>
+          </div>
+
+          <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-150 space-y-1">
+            <span className="text-xs font-semibold text-amber-800">
+              {lang === 'zh' ? '最小公倍数 LCM（取所有质因数最高幂）：' : 'LCM (Max Powers of All Primes):'}
+            </span>
+            <div className="text-lg font-bold font-mono text-amber-950">
+              <MathView math={`\\operatorname{lcm}(${list.join(', ')}) = ${lcmTokens.join(' \\times ')} = ${finalLcm}`} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const factorsA = useMemo(() => getPrimeFactorization(a), [a]);
   const factorsB = useMemo(() => getPrimeFactorization(b), [b]);
 

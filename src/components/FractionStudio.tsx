@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { simplifyFraction, fractionAddSubtract } from '../utils/mathEngine';
 import { Language } from '../utils/i18n';
 import { MathView } from './MathView';
@@ -18,6 +18,14 @@ export const FractionStudio: React.FC<FractionStudioProps> = ({
   // Input fractions
   const [numStr, setNumStr] = useState<string>(initialA.toString());
   const [denStr, setDenStr] = useState<string>(initialB.toString());
+
+  useEffect(() => {
+    setNumStr(initialA.toString());
+  }, [initialA]);
+
+  useEffect(() => {
+    setDenStr(initialB.toString());
+  }, [initialB]);
 
   // Fraction addition/subtraction mode
   const [addN1, setAddN1] = useState<string>('3');
